@@ -20,13 +20,13 @@ Resultado de referencia: 601 mediciones válidas en 10 segundos, con frecuencia 
 
 ## Fase 2 — Base técnica
 
-**Estado: Pendiente**
+**Estado: Completada**
 
-- [x] Migrar React de JavaScript a TypeScript (tipos y compilación web verificados; validación en Android pendiente).
-- [ ] Verificar compilación y funcionamiento en Android.
-- [ ] Integrar SQLite.
-- [ ] Definir tipos y modelos de registros.
-- [ ] Implementar almacenamiento y consultas locales.
+- [x] Migrar React de JavaScript a TypeScript.
+- [x] Verificar compilación y funcionamiento en Android de la migración (confirmado por el usuario en Xiaomi 11T).
+- [x] Integrar SQLite (validado según confirmación del usuario).
+- [x] Definir tipos y modelos de registros (según `docs/SQLITE_DESIGN.md`; validación confirmada por el usuario).
+- [x] Implementar almacenamiento y consultas locales (persistencia en Android validada según confirmación del usuario).
 
 ## Fase 3 — Interfaz y captura
 

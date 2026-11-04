@@ -1,5 +1,5 @@
-
 import { useEffect, useRef, useState } from "react";
+import DatabaseTest from "./components/DatabaseTest";
 import type { EstadoCaptura, MedicionSensor, ResultadoCaptura } from "./types/sensores";
 
 const DURACION_MS = 10000;
@@ -147,6 +147,7 @@ function App() {
           </pre>
         </section>
       )}
+      <DatabaseTest />
     </main>
   );
 }

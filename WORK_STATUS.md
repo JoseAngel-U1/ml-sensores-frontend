@@ -2,9 +2,9 @@
 
 ## Estado general
 
-**Etapa actual:** Fase 2 — Base técnica.
+**Etapa actual:** Fase 2 — Base técnica completada.
 
-**Tarea activa:** Validación en Android de la migración a React + TypeScript.
+**Estado de la tarea:** Integración inicial de SQLite validada según confirmación del usuario.
 
 ## Trabajo completado
 
@@ -32,7 +32,21 @@
 - Se conservan la duración objetivo de 10 segundos, el intervalo de comprobación de 100 ms, la validación de los seis valores finitos y el cálculo de frecuencia como total / duración real.
 - La interfaz y los estilos se conservan. La carpeta nativa `android/` no se modificó.
 - La instalación informó 12 vulnerabilidades moderadas; no se aplicaron actualizaciones ajenas a la migración.
-- Pendiente: sincronizar, compilar y ejecutar en el Xiaomi 11T y repetir la captura. Los 601 registros y 60.09 Hz documentados corresponden a la prueba anterior a la migración.
+- Migración validada en Xiaomi 11T según confirmación del usuario. Los 601 registros y 60.09 Hz documentados corresponden a la prueba de referencia anterior.
+
+## Integración inicial de SQLite — validada
+
+- Diseño aprobado documentado en `docs/SQLITE_DESIGN.md`.
+- Versiones instaladas revisadas: Capacitor Core/Android/CLI 8.6.0 y `@capacitor-community/sqlite` 8.1.1.
+- Tipos `Actividad`, `TipoRegistro`, `EstadoSync`, `Medicion` y `Registro` en `src/types/records.ts`, reutilizando `MedicionSensor`.
+- Servicio `src/services/database.ts`: base `ml_sensores`, versión 1, tabla `registros` y su índice con el esquema aprobado.
+- Funciones implementadas: `initializeDatabase`, `saveRecord`, `getRecords`, `getPendingRecords`, `getRecordById` y `markAsSynced`.
+- Inicialización compartida, recuperación de conexión y operaciones encoladas para evitar aperturas duplicadas y transacciones superpuestas.
+- Consultas parametrizadas; validación de UUID, fecha ISO UTC, tipo/actividad, duración/frecuencia positivas, estado pendiente y seis lecturas finitas por medición. Serialización/deserialización JSON con validación de filas recuperadas.
+- Sección temporal independiente `src/components/DatabaseTest.tsx`: inicializar, guardar datos sintéticos con UUID generado en Android, consultar todos/pendientes y consultar por UUID mostrando JSON. Comprueba la igualdad de las mediciones tras guardar y recuperar.
+- `src/App.tsx` incorpora la sección temporal; la lógica de captura de sensores se conserva.
+- La implementación del agente no requirió modificaciones nativas de Android.
+- Integración y persistencia en Android validadas según confirmación del usuario. Las verificaciones fueron responsabilidad del usuario; el agente no ejecutó comandos de instalación, tipos, lint, build, sincronización, pruebas ni Git en esta etapa.
 
 ## Decisiones aprobadas
 
@@ -45,33 +59,37 @@
 - Clasificación de quieto, caminando y corriendo.
 - Procesamiento y predicción desde Python/Jupyter.
 
-## Próxima tarea
+## Validación completada
 
-### Validación de la migración en Android
+### Validación de SQLite en Android
 
-**Objetivo:** Confirmar en el dispositivo físico la captura de sensores después de la migración implementada.
+**Resultado:** Validación confirmada por el usuario: guardado, recuperación por UUID y JSON, persistencia tras cerrar/reabrir y conservación de la captura de sensores.
 
-**Pasos pendientes (desde la raíz `ml-sensores/`):**
+**Comandos de referencia para futuras verificaciones (desde `ml-sensores/`):**
 ```bash
+npm run typecheck
+npm run lint
 npm run build
 npx cap sync android
 npx cap open android
 ```
 
-Ejecutar desde Android Studio en el Xiaomi 11T, pulsar «Iniciar captura» y comprobar el cierre automático tras aproximadamente 10 segundos, mediciones válidas, duración, frecuencia y primera/última medición visibles. Repetir la captura para verificar el reinicio de los contadores. Registrar los resultados reales; la frecuencia se mide y no tiene que coincidir exactamente con 60.09 Hz.
+El procedimiento de referencia está en `docs/SQLITE_DESIGN.md`: prueba en modo avión, guardado y consulta por UUID, cierre y reapertura, revisión del JSON recuperado y captura de sensores de 10 segundos.
 
 **Restricciones:**
 - No recrear el proyecto.
 - No eliminar ni reinicializar Android.
-- No integrar SQLite todavía.
+- No avanzar a FastAPI, MongoDB ni pantallas definitivas.
 - No modificar la funcionalidad de captura.
 
 **Criterios de aceptación:**
-- [x] TypeScript sin errores.
-- [x] Compilación web exitosa.
-- [ ] Aplicación migrada ejecutable en Android.
-- [ ] Captura de 10 segundos funcional en el dispositivo después de la migración.
-- [ ] Resultados y métricas visibles en el dispositivo después de la migración.
+Validación registrada según confirmación del usuario.
+
+- [x] TypeScript, lint y build correctos después de integrar SQLite.
+- [x] Base inicializada en Android y registro guardado.
+- [x] Recuperación por UUID y mediciones JSON correctas.
+- [x] Persistencia después de cerrar y reabrir, sin conexión.
+- [x] Captura de sensores de 10 segundos conservada.
 
 ## Bloqueos
 
@@ -79,4 +97,4 @@ Ninguno identificado.
 
 ## Siguiente etapa
 
-Integración de SQLite y persistencia local de sesiones.
+Fase 3 — Interfaz y captura, pendiente de iniciar mediante una nueva tarea del usuario.

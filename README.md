@@ -16,10 +16,10 @@ El proyecto contempla la recolección de datos etiquetados, el almacenamiento lo
 
 **Aplicación móvil**
 - React
-- TypeScript (migración implementada; validación en Android pendiente)
+- TypeScript (migración validada en Xiaomi 11T)
 - Vite
 - Capacitor
-- SQLite (integración pendiente)
+- SQLite (integración inicial implementada; validación de persistencia pendiente)
 
 **Backend (planificado)**
 - Python
@@ -102,6 +102,8 @@ Desde Android Studio, ejecutar la aplicación en un dispositivo Android.
 La captura de sensores debe probarse en un dispositivo compatible; su funcionamiento puede variar en navegadores de escritorio.
 
 ## Organización del proyecto
+
+El diseño aprobado de SQLite, la API de almacenamiento y el procedimiento de prueba manual están documentados en [docs/SQLITE_DESIGN.md](docs/SQLITE_DESIGN.md). La interfaz incluye una sección temporal de prueba con datos sintéticos, independiente de la captura de sensores.
 
 El proyecto se encuentra en desarrollo. Su estructura se ampliará conforme se implementen los módulos de captura, persistencia local y sincronización.
 
