@@ -1,26 +1,27 @@
 
 import { useEffect, useRef, useState } from "react";
+import type { EstadoCaptura, MedicionSensor, ResultadoCaptura } from "./types/sensores";
 
 const DURACION_MS = 10000;
 
 function App() {
-  const [estado, setEstado] = useState("Listo para iniciar");
-  const [segundos, setSegundos] = useState(0);
-  const [resultado, setResultado] = useState(null);
+  const [estado, setEstado] = useState<EstadoCaptura>("Listo para iniciar");
+  const [segundos, setSegundos] = useState<number>(0);
+  const [resultado, setResultado] = useState<ResultadoCaptura | null>(null);
 
-  const medicionesRef = useRef([]);
-  const inicioRef = useRef(null);
-  const capturandoRef = useRef(false);
-  const temporizadorRef = useRef(null);
+  const medicionesRef = useRef<MedicionSensor[]>([]);
+  const inicioRef = useRef<number | null>(null);
+  const capturandoRef = useRef<boolean>(false);
+  const temporizadorRef = useRef<number | null>(null);
 
   useEffect(() => {
-    function leerSensores(evento) {
-      if (!capturandoRef.current) return;
+    function leerSensores(evento: DeviceMotionEvent): void {
+      if (!capturandoRef.current || inicioRef.current === null) return;
 
       const a = evento.acceleration;
       const g = evento.rotationRate;
 
-      const medicion = {
+      const medicion: MedicionSensor = {
         tiempo_ms: performance.now() - inicioRef.current,
         ax: a?.x ?? null,
         ay: a?.y ?? null,
@@ -37,34 +38,19 @@ function App() {
 
     return () => {
       window.removeEventListener("devicemotion", leerSensores);
-      clearInterval(temporizadorRef.current);
+      if (temporizadorRef.current !== null) {
+        window.clearInterval(temporizadorRef.current);
+      }
     };
   }, []);
 
-  function iniciar() {
-    medicionesRef.current = [];
-    inicioRef.current = performance.now();
-    capturandoRef.current = true;
-
-    setResultado(null);
-    setSegundos(0);
-    setEstado("Capturando...");
-
-    temporizadorRef.current = setInterval(() => {
-      const transcurrido = performance.now() - inicioRef.current;
-      setSegundos(Math.min(10, Math.floor(transcurrido / 1000)));
-
-      if (transcurrido >= DURACION_MS) {
-        detener();
-      }
-    }, 100);
-  }
-
-  function detener() {
-    if (!capturandoRef.current) return;
+  function detener(): void {
+    if (!capturandoRef.current || inicioRef.current === null) return;
 
     capturandoRef.current = false;
-    clearInterval(temporizadorRef.current);
+    if (temporizadorRef.current !== null) {
+      window.clearInterval(temporizadorRef.current);
+    }
 
     const mediciones = medicionesRef.current;
     const total = mediciones.length;
@@ -93,6 +79,26 @@ function App() {
     setEstado("Captura finalizada");
 
     console.log("Mediciones capturadas:", mediciones);
+  }
+
+  function iniciar(): void {
+    medicionesRef.current = [];
+    inicioRef.current = performance.now();
+    capturandoRef.current = true;
+
+    setResultado(null);
+    setSegundos(0);
+    setEstado("Capturando...");
+
+    temporizadorRef.current = window.setInterval(() => {
+      if (inicioRef.current === null) return;
+      const transcurrido = performance.now() - inicioRef.current;
+      setSegundos(Math.min(10, Math.floor(transcurrido / 1000)));
+
+      if (transcurrido >= DURACION_MS) {
+        detener();
+      }
+    }, 100);
   }
 
   return (

@@ -22,7 +22,7 @@ Resultado de referencia: 601 mediciones válidas en 10 segundos, con frecuencia 
 
 **Estado: Pendiente**
 
-- [ ] Migrar React de JavaScript a TypeScript.
+- [x] Migrar React de JavaScript a TypeScript (tipos y compilación web verificados; validación en Android pendiente).
 - [ ] Verificar compilación y funcionamiento en Android.
 - [ ] Integrar SQLite.
 - [ ] Definir tipos y modelos de registros.

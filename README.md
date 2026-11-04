@@ -16,7 +16,7 @@ El proyecto contempla la recolección de datos etiquetados, el almacenamiento lo
 
 **Aplicación móvil**
 - React
-- TypeScript (migración pendiente)
+- TypeScript (migración implementada; validación en Android pendiente)
 - Vite
 - Capacitor
 - SQLite (integración pendiente)
@@ -79,6 +79,12 @@ npm run dev
 ```
 
 ### Compilación
+
+La compilación incluye la verificación estricta de tipos. También puede ejecutarse por separado:
+
+```bash
+npm run typecheck
+```
 
 ```bash
 npm run build

@@ -75,3 +75,27 @@ Consultar `README.md`, `ROADMAP.md` y `WORK_STATUS.md` antes de comenzar tareas 
 Actualizar `WORK_STATUS.md` al completar una etapa o cambiar el estado de una tarea.
 
 No marcar una funcionalidad como terminada sin haberla verificado.
+
+## 7. Ejecución de comandos y ahorro de tokens
+
+El usuario será responsable de ejecutar manualmente los comandos de terminal.
+
+El agente debe:
+
+1. Inspeccionar archivos y modificar código según la tarea.
+2. Indicar qué dependencias necesitan instalarse, sin instalarlas automáticamente.
+3. Proporcionar los comandos necesarios para verificar los cambios.
+4. Solicitar al usuario los resultados de las verificaciones cuando sean necesarios.
+5. Analizar y corregir errores a partir de los resultados proporcionados.
+
+**No ejecutar automáticamente:**
+- `npm install`
+- `npm run build`
+- `npm run lint`
+- `npm run typecheck`
+- `npx cap sync`
+- Comandos de Git que modifiquen el repositorio
+
+**Excepción:** ejecutar comandos únicamente cuando el usuario lo autorice expresamente.
+
+El objetivo es reducir el consumo de tokens y mantener el control de las verificaciones en manos del usuario.
