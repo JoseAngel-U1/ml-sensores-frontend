@@ -8,30 +8,32 @@ interface CaptureControlsProps {
 
 const ETIQUETAS: Record<EstadoCaptura, string> = {
   "Listo para iniciar": "Iniciar captura",
+  "Preparando...": "Preparando…",
   "Capturando...": "Capturando…",
   "Captura finalizada": "Nueva captura",
 };
 
 const AYUDAS: Record<EstadoCaptura, string> = {
-  "Listo para iniciar": "La captura dura 10 segundos y se inicia manualmente.",
+  "Listo para iniciar": "La preparación dura 3 segundos y la captura 10 segundos.",
+  "Preparando...": "Prepárate: la captura comenzará automáticamente al terminar la cuenta.",
   "Capturando...": "Captura en curso. Mantén esta vista abierta hasta finalizar.",
   "Captura finalizada": "Captura completada. Las mediciones permanecen en memoria.",
 };
 
 /**
  *! Controles visuales de captura. La sesión la controla el hook del consumidor.
- ** El botón se deshabilita durante la captura para evitar inicios duplicados.
+ ** El botón se deshabilita durante preparación y captura para evitar inicios duplicados.
  */
 export default function CaptureControls({ estado, onStart }: CaptureControlsProps) {
   const ayudaId = useId();
-  const capturando = estado === "Capturando...";
+  const bloqueado = estado === "Preparando..." || estado === "Capturando...";
 
   return (
     <div className="capture-controls">
       <button
         type="button"
         onClick={onStart}
-        disabled={capturando}
+        disabled={bloqueado}
         aria-describedby={ayudaId}
       >
         {ETIQUETAS[estado]}

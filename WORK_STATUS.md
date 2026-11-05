@@ -2,9 +2,9 @@
 
 ## Estado general
 
-**Etapa actual:** Fase 3 — Interfaz y captura, en progreso. Tareas 3.1, 3.2, 3.3 y 3.4 completadas y validadas; siguiente tarea: 3.5, pendiente de iniciar. Fases 1 y 2 completadas.
+**Etapa actual:** Fase 3 — Interfaz y captura, en progreso. Tareas 3.1, 3.2, 3.3, 3.4 y 3.5 completadas y validadas; siguiente tarea: 3.6 — Guardado de capturas de Entrenamiento en SQLite, pendiente de iniciar. Fases 1 y 2 completadas.
 
-**Estado de la tarea:** 3.4 — Componentes reutilizables de captura completados y validados por el usuario en navegador y Android. La tarea 3.5 — Cuenta regresiva de preparación de 3 segundos queda como siguiente tarea pendiente de iniciar.
+**Estado de la tarea:** 3.5 — Cuenta regresiva de preparación de 3 segundos completada y validada por el usuario. La preparación funciona antes de la captura real de 10 segundos, sin mediciones durante la preparación; cancelación, limpieza y reutilización verificadas. La tarea 3.6 — Guardado de capturas de Entrenamiento en SQLite queda como siguiente tarea pendiente de iniciar.
 
 ## Trabajo completado
 
@@ -26,6 +26,7 @@
 - Tarea 3.2 completada: navegación entre las cuatro rutas y pruebas existentes validadas por el usuario tanto en navegador como en Android.
 - Tarea 3.3 completada: tema visual claro validado por el usuario; commit de la implementación realizado por el usuario según su confirmación.
 - Tarea 3.4 completada: componentes reutilizables de captura validados por el usuario en navegador y Android, con reloj circular aprobado, selector de actividad mediante botones, captura funcional en ambos módulos y pruebas de SQLite conservadas.
+- Tarea 3.5 completada: preparación de 3 segundos antes de la captura real de 10 segundos en Entrenamiento y Predicción, validada por el usuario. Durante la preparación no se toman mediciones; la cancelación, limpieza y reutilización funcionan correctamente.
 
 ## Verificación de la migración (2026-11-04)
 
@@ -79,7 +80,7 @@
 
 - Arquitectura y tareas verificables documentadas; hook de la tarea 3.1 validado. Creadas las dos páginas provisionales y estructura compartida de navegación; el diseño definitivo sigue pendiente.
 - La captura permanece en `src/hooks/useSensorCapture.ts`. Las vistas Captura de Entrenamiento y Predicción consumen el hook mediante `CaptureClock`, `ActivitySelector` (solo entrenamiento), `CaptureControls` y `CaptureResult`; estos componentes fueron validados por el usuario en navegador y Android. `DatabaseTest` sigue accesible dentro de un bloque desplegable en Captura de Entrenamiento. `CaptureTest.tsx` se conserva sin montarse en las rutas.
-- `App.tsx` declara rutas y `main.tsx` configura `BrowserRouter`. La base visual compartida de 3.3 y los componentes de captura de 3.4 están completados y validados por el usuario; las vistas definitivas siguen pendientes.
+- `App.tsx` declara rutas y `main.tsx` configura `BrowserRouter`. La base visual compartida de 3.3 y los componentes de captura de 3.4 están completados y validados por el usuario; las vistas definitivas siguen pendientes. La tarea 3.5 añade una preparación de 3 segundos y está completada y validada por el usuario.
 - Dependencias de navegación ya declaradas en `package.json`: `react-router-dom: ^7.18.5` y `@capacitor/app: ^8.1.2`. No se añadieron dependencias para el tema visual.
 - Las muestras completas ya se exponen en `resultado.mediciones`. Antes de integrar el guardado real, quedan por definir las métricas numéricas sin redondear, el tratamiento de muestras incompletas y la política de navegación durante captura.
 - La tarea 3.1 modificó hook, consumo en App y el tipo de resultado; el usuario confirmó que las pruebas funcionan correctamente. El agente no ejecutó comandos ni verificaciones de código.
@@ -324,6 +325,55 @@ npx cap open android
 
 **3.4 queda completada y validada por el usuario.** La Fase 3 general permanece en progreso.
 
-## Siguiente tarea — 3.5: Cuenta regresiva de preparación de 3 segundos
+## Tarea 3.5 — Cuenta regresiva de preparación de 3 segundos: completada y validada por el usuario
 
-**Pendiente de iniciar.** Añadir una cuenta regresiva previa de 3 segundos separada de los 10 segundos de captura, definir el comportamiento de navegación durante la preparación/captura y verificar temporizadores, limpieza y ausencia de sesiones superpuestas. No se ha iniciado su implementación; las tareas posteriores conservan su estado.
+### Cambios realizados
+
+- `src/types/sensores.ts`: `EstadoCaptura` incorpora `"Preparando..."` además de los estados existentes.
+- `src/hooks/useSensorCapture.ts`:
+  - Exporta `DURACION_CAPTURA_SEGUNDOS = 10` y `DURACION_PREPARACION_SEGUNDOS = 3`; la captura conserva su duración objetivo y la comprobación cada 100 ms.
+  - `iniciar()` bloquea inicios duplicados, limpia el resultado anterior y arranca una cuenta de preparación de 3 segundos.
+  - Durante la preparación no se registra el listener `devicemotion` ni se almacenan mediciones.
+  - Al terminar la preparación, la captura de 10 segundos comienza automáticamente; el listener se registra solo en ese momento.
+  - La preparación y la captura comparten una limpieza idempotente de intervalos, listener y referencias. Al desmontar se cancela cualquiera de las dos fases sin publicar un resultado parcial.
+  - El resultado conserva las mediciones completas en `resultado.mediciones` y la duración registrada corresponde solo a los 10 segundos de captura.
+- `src/components/capture/CaptureClock.tsx`: recibe `preparacionRestante` y `duracionPreparacion`; muestra la cuenta 3/2/1 con el anillo durante la preparación y mantiene el temporizador de 10 segundos durante la captura.
+- `src/components/capture/CaptureControls.tsx`: añade textos para `"Preparando..."` y deshabilita el botón durante preparación y captura.
+- `src/pages/TrainingPage.tsx` y `src/pages/PredictionPage.tsx`: consumen `preparacion`, usan las constantes exportadas y bloquean el selector de actividad durante preparación y captura.
+- `src/index.css`: el mensaje de preparación reutiliza el color primario del tema claro, sin cambios de paleta ni modo oscuro.
+- No se modificaron `src/services/database.ts`, `src/components/DatabaseTest.tsx`, las rutas, `App.tsx` ni archivos nativos Android. No se añadieron dependencias. `src/components/CaptureTest.tsx` sigue conservado y sin montarse en las rutas.
+
+### Validación confirmada por el usuario
+
+El usuario confirmó que la tarea 3.5 funciona correctamente. Se registra que la preparación de 3 segundos se ejecuta antes de la captura real de 10 segundos, que durante la preparación no se toman mediciones y que la cancelación, limpieza y reutilización funcionan correctamente. El agente no ejecutó instalaciones, compilación, lint, pruebas ni Git.
+
+Se conservan los comandos siguientes como referencia de regresión para cambios futuros, no como pendientes de esta tarea. Desde `ml-sensores/`:
+
+```bash
+npm run typecheck
+npm run lint
+npm run build
+npm run dev
+```
+
+Para Android, después del build:
+
+```bash
+npx cap sync android
+npx cap open android
+```
+
+- [x] Funcionamiento validado por el usuario en Entrenamiento y Predicción.
+- [x] Preparación de 3 segundos antes de la captura real de 10 segundos.
+- [x] Sin mediciones durante la preparación.
+- [x] Captura real de 10 segundos iniciada automáticamente al terminar la preparación.
+- [x] Cancelación, limpieza y reutilización correctas, sin sesiones superpuestas.
+- [x] Selector de actividad bloqueado durante preparación y captura.
+- [x] Resultado con seis ejes, `tiempo_ms`, métricas y mediciones en memoria; duración registrada de aproximadamente 10 segundos.
+- [x] Prueba de SQLite conservada.
+
+**3.5 queda completada y validada por el usuario.** La Fase 3 general permanece en progreso.
+
+## Siguiente tarea — 3.6: Guardado de capturas de Entrenamiento en SQLite
+
+**Pendiente de iniciar.** Integrar el guardado de las capturas de Entrenamiento en SQLite reutilizando el servicio existente. Resolver la exposición de muestras completas y métricas numéricas, el tratamiento de muestras incompletas y la construcción de `Registro` con actividad obligatoria, UUID, fecha ISO y estado pendiente. Verificar guardado y recuperación, incluidos los errores, sin modificar el esquema aprobado ni las demás tareas.

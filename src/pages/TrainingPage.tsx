@@ -5,15 +5,17 @@ import ActivitySelector from "../components/capture/ActivitySelector";
 import CaptureClock from "../components/capture/CaptureClock";
 import CaptureControls from "../components/capture/CaptureControls";
 import CaptureResult from "../components/capture/CaptureResult";
-import { useSensorCapture } from "../hooks/useSensorCapture";
+import {
+  DURACION_CAPTURA_SEGUNDOS,
+  DURACION_PREPARACION_SEGUNDOS,
+  useSensorCapture,
+} from "../hooks/useSensorCapture";
 import type { Actividad } from "../types/records";
 
-const DURACION_OBJETIVO = 10;
-
 function TrainingCapture() {
-  const { estado, segundos, resultado, iniciar } = useSensorCapture();
+  const { estado, preparacion, segundos, resultado, iniciar } = useSensorCapture();
   const [actividad, setActividad] = useState<Actividad>("caminando");
-  const capturando = estado === "Capturando...";
+  const bloqueado = estado === "Preparando..." || estado === "Capturando...";
 
   return (
     <>
@@ -21,14 +23,15 @@ function TrainingCapture() {
         <CaptureClock
           estado={estado}
           tiempoTranscurrido={segundos}
-          progreso={segundos / DURACION_OBJETIVO}
-          duracionObjetivo={DURACION_OBJETIVO}
+          progreso={segundos / DURACION_CAPTURA_SEGUNDOS}
+          duracionObjetivo={DURACION_CAPTURA_SEGUNDOS}
+          preparacionRestante={preparacion}
+          duracionPreparacion={DURACION_PREPARACION_SEGUNDOS}
         />
-
         <ActivitySelector
           value={actividad}
           onChange={setActividad}
-          disabled={capturando}
+          disabled={bloqueado}
         />
 
         <CaptureControls estado={estado} onStart={iniciar} />

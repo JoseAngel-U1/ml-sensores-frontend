@@ -726,6 +726,7 @@ pre {
   text-align: center;
 }
 
+.capture-controls__hint[data-estado='Preparando...'],
 .capture-controls__hint[data-estado='Capturando...'] {
   color: var(--color-primary);
   font-weight: 600;

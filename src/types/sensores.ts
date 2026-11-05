@@ -1,5 +1,6 @@
 export type EstadoCaptura =
   | "Listo para iniciar"
+  | "Preparando..."
   | "Capturando..."
   | "Captura finalizada";
 

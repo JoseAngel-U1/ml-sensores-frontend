@@ -2,20 +2,24 @@ import { NavLink, useMatch } from "react-router-dom";
 import CaptureClock from "../components/capture/CaptureClock";
 import CaptureControls from "../components/capture/CaptureControls";
 import CaptureResult from "../components/capture/CaptureResult";
-import { useSensorCapture } from "../hooks/useSensorCapture";
-
-const DURACION_OBJETIVO = 10;
+import {
+  DURACION_CAPTURA_SEGUNDOS,
+  DURACION_PREPARACION_SEGUNDOS,
+  useSensorCapture,
+} from "../hooks/useSensorCapture";
 
 function PredictionCapture() {
-  const { estado, segundos, resultado, iniciar } = useSensorCapture();
+  const { estado, preparacion, segundos, resultado, iniciar } = useSensorCapture();
 
   return (
     <section className="capture-workspace" aria-label="Captura para predicción">
       <CaptureClock
         estado={estado}
         tiempoTranscurrido={segundos}
-        progreso={segundos / DURACION_OBJETIVO}
-        duracionObjetivo={DURACION_OBJETIVO}
+        progreso={segundos / DURACION_CAPTURA_SEGUNDOS}
+        duracionObjetivo={DURACION_CAPTURA_SEGUNDOS}
+        preparacionRestante={preparacion}
+        duracionPreparacion={DURACION_PREPARACION_SEGUNDOS}
       />
 
       <CaptureControls estado={estado} onStart={iniciar} />

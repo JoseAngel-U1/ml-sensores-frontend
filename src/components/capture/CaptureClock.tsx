@@ -5,13 +5,15 @@ interface CaptureClockProps {
   tiempoTranscurrido: number;
   progreso: number;
   duracionObjetivo: number;
+  preparacionRestante: number;
+  duracionPreparacion: number;
 }
 
 const RADIO = 92;
 const CIRCUNFERENCIA = 2 * Math.PI * RADIO;
 
 /**
- *! Presenta el temporizador circular de una captura.
+ *! Presenta la cuenta regresiva de preparación y el temporizador de captura.
  ** No crea temporizadores ni accede a sensores: solo representa las props recibidas.
  */
 export default function CaptureClock({
@@ -19,16 +21,33 @@ export default function CaptureClock({
   tiempoTranscurrido,
   progreso,
   duracionObjetivo,
+  preparacionRestante,
+  duracionPreparacion,
 }: CaptureClockProps) {
+  const enPreparacion = estado === "Preparando...";
   const progresoLimitado = Math.min(1, Math.max(0, progreso));
-  const restante =
-    estado === "Captura finalizada"
+  const preparacionLimitada = Math.min(
+    duracionPreparacion,
+    Math.max(0, preparacionRestante)
+  );
+  const restante = enPreparacion
+    ? preparacionLimitada
+    : estado === "Captura finalizada"
       ? 0
       : Math.max(0, duracionObjetivo - Math.floor(tiempoTranscurrido));
-  const activa = estado === "Capturando...";
+  const progresoMostrado = enPreparacion
+    ? duracionPreparacion > 0
+      ? (duracionPreparacion - preparacionLimitada) / duracionPreparacion
+      : 0
+    : progresoLimitado;
+  const activa = enPreparacion || estado === "Capturando...";
 
   return (
-    <div className="capture-clock" role="group" aria-label="Temporizador de captura">
+    <div
+      className="capture-clock"
+      role="group"
+      aria-label={enPreparacion ? "Cuenta regresiva de preparación" : "Temporizador de captura"}
+    >
       <svg
         className="capture-clock__ring"
         viewBox="0 0 220 220"
@@ -42,7 +61,7 @@ export default function CaptureClock({
           cy="110"
           r={RADIO}
           strokeDasharray={CIRCUNFERENCIA}
-          strokeDashoffset={CIRCUNFERENCIA * progresoLimitado}
+          strokeDashoffset={CIRCUNFERENCIA * progresoMostrado}
         />
       </svg>
       <div className="capture-clock__readout">
