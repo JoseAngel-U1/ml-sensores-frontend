@@ -1,0 +1,61 @@
+<!DOCTYPE html><html class="light" lang="es"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"><meta content="mobile_tab" name="shell-type"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;background-color:#F5F8F5;color:#172C20;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "bg-main": "#F5F8F5", "card-surface": "#FFFFFF", "primary-green": "#16854B", "soft-green": "#E4F3E9", "text-main": "#172C20", "text-sub": "#506557", "border-soft": "#E1EBE3" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, fontFamily: { "headline": ["Space Grotesk", "sans-serif"], "body": ["Space Grotesk", "sans-serif"], "mono": ["JetBrains Mono", "monospace"] } } } }</script></head><body class="bg-[#F5F8F5] font-body text-[#172C20] antialiased flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-[#F5F8F5]/90 backdrop-blur-xl border-b border-[#E1EBE3]/50"><div class="flex justify-between items-center px-5 pt-2 text-[#506557] font-headline text-xs select-none"><span class="font-semibold text-[#172C20]">13:31</span><div class="flex items-center gap-1.5 text-[#506557]"><span class="material-symbols-outlined text-[16px]">signal_cellular_alt</span><span class="material-symbols-outlined text-[16px]">wifi</span><span class="material-symbols-outlined text-[16px]">battery_full</span></div></div><div class="h-16 px-5 flex items-center justify-between"><div class="flex items-center gap-3"><button aria-label="Menu" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-[#E1EBE3] text-[#172C20] shadow-sm hover:bg-[#E4F3E9] transition-colors"><span class="material-symbols-outlined text-[24px]">menu</span></button><h1 class="font-headline font-bold text-xl text-[#172C20] tracking-tight truncate">ML Sensor</h1></div></div><div class="w-full h-[2px] bg-[#16854B] shadow-[0_1px_4px_rgba(22,133,75,0.25)]"></div></header><main class="flex flex-col relative w-full px-5 pt-24 pb-28 bg-[#F5F8F5]"><div class="flex flex-col w-full"><div class="mb-5 px-1"><h2 class="font-headline font-bold text-[24px] text-[#172C20] tracking-tight leading-tight">Entrenamiento</h2><p class="font-headline text-xs text-[#506557] font-medium tracking-wide mt-0.5">Registro Datos</p></div>
+<div class="flex items-center justify-between mb-3 px-1"><div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-[#16854B] animate-pulse"></span><span class="font-headline text-xs uppercase tracking-wider text-[#506557] font-medium">Telemetría Local</span></div><span class="font-headline text-xs text-[#506557] bg-[#E4F3E9] border border-[#d2ead8] px-2.5 py-0.5 rounded-full font-medium" id="queue-counter">3 no sincronizados</span></div>
+<div class="flex flex-col gap-2.5 w-full mb-5" id="sync-list"><div class="group relative flex items-center justify-between p-4 bg-white rounded-xl border border-[#E1EBE3] shadow-sm hover:border-[#16854B]/30 transition-all duration-200"><div class="flex items-center gap-3.5 min-w-0"><div class="w-10 h-10 rounded-lg bg-[#E4F3E9] flex items-center justify-center text-[#16854B] flex-shrink-0"><span class="material-symbols-outlined text-[22px]">description</span></div><div class="flex flex-col min-w-0"><span class="font-headline font-semibold text-[15px] text-[#172C20] tracking-tight truncate">ID: REG-001</span><div class="flex items-center gap-1.5 text-[#506557]"><span class="material-symbols-outlined text-[14px]">timer</span><span class="text-xs font-headline">Tiempo: 5 s</span></div></div></div><div class="flex-shrink-0 ml-3"><span class="badge-status inline-flex items-center px-2.5 py-1 rounded-full font-headline text-xs font-medium text-[#16854B] bg-[#E4F3E9] border border-[#c4e6cc]">Pendiente</span></div></div><div class="group relative flex items-center justify-between p-4 bg-white rounded-xl border border-[#E1EBE3] shadow-sm hover:border-[#16854B]/30 transition-all duration-200"><div class="flex items-center gap-3.5 min-w-0"><div class="w-10 h-10 rounded-lg bg-[#E4F3E9] flex items-center justify-center text-[#16854B] flex-shrink-0"><span class="material-symbols-outlined text-[22px]">description</span></div><div class="flex flex-col min-w-0"><span class="font-headline font-semibold text-[15px] text-[#172C20] tracking-tight truncate">ID: REG-002</span><div class="flex items-center gap-1.5 text-[#506557]"><span class="material-symbols-outlined text-[14px]">timer</span><span class="text-xs font-headline">Tiempo: 10 s</span></div></div></div><div class="flex-shrink-0 ml-3"><span class="badge-status inline-flex items-center px-2.5 py-1 rounded-full font-headline text-xs font-medium text-[#16854B] bg-[#E4F3E9] border border-[#c4e6cc]">Pendiente</span></div></div><div class="group relative flex items-center justify-between p-4 bg-white rounded-xl border border-[#E1EBE3] shadow-sm hover:border-[#16854B]/30 transition-all duration-200"><div class="flex items-center gap-3.5 min-w-0"><div class="w-10 h-10 rounded-lg bg-[#E4F3E9] flex items-center justify-center text-[#16854B] flex-shrink-0"><span class="material-symbols-outlined text-[22px]">description</span></div><div class="flex flex-col min-w-0"><span class="font-headline font-semibold text-[15px] text-[#172C20] tracking-tight truncate">ID: REG-003</span><div class="flex items-center gap-1.5 text-[#506557]"><span class="material-symbols-outlined text-[14px]">timer</span><span class="text-xs font-headline">Tiempo: 5 s</span></div></div></div><div class="flex-shrink-0 ml-3"><span class="badge-status inline-flex items-center px-2.5 py-1 rounded-full font-headline text-xs font-medium text-[#16854B] bg-[#E4F3E9] border border-[#c4e6cc]">Pendiente</span></div></div></div>
+
+<div class="w-full pt-1 pb-2">
+<button class="w-full h-[52px] bg-[#16854B] hover:bg-[#126f3e] text-white font-headline font-semibold text-base rounded-xl flex items-center justify-center gap-2.5 shadow-md shadow-[#16854B]/20 active:scale-[0.98] transition-all duration-200" id="sync-button" type="button">
+<span class="material-symbols-outlined text-[22px] transition-transform duration-700" id="sync-icon">sync</span>
+<span id="sync-label" class="">Sincronizar</span>
+</button>
+</div>
+</div>
+<script>
+  (function () {
+    const btn = document.getElementById('sync-button');
+    const icon = document.getElementById('sync-icon');
+    const label = document.getElementById('sync-label');
+    const counter = document.getElementById('queue-counter');
+    const list = document.getElementById('sync-list');
+
+    if (!btn) return;
+
+    let isSyncing = false;
+
+    btn.addEventListener('click', function () {
+      if (isSyncing) return;
+      isSyncing = true;
+
+      icon.classList.add('animate-spin');
+      label.textContent = 'Sincronizando...';
+      btn.classList.add('opacity-90');
+
+      setTimeout(() => {
+        icon.classList.remove('animate-spin');
+        icon.textContent = 'check_circle';
+        label.textContent = 'Sincronizado';
+
+        if (counter) {
+          counter.textContent = 'Al día';
+          counter.classList.add('text-[#16854B]', 'bg-[#E4F3E9]');
+        }
+
+        const badges = list.querySelectorAll('.badge-status');
+        badges.forEach(badge => {
+          badge.textContent = 'Completado';
+          badge.classList.remove('text-[#506557]');
+          badge.classList.add('text-[#16854B]', 'bg-[#E4F3E9]');
+        });
+
+        setTimeout(() => {
+          icon.textContent = 'sync';
+          label.textContent = 'Sincronizar';
+          btn.classList.remove('opacity-90');
+          isSyncing = false;
+        }, 2600);
+      }, 1400);
+    });
+  })();
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-[#F5F8F5]/95 backdrop-blur-xl border-t border-[#E1EBE3] shadow-sm"><div class="grid grid-cols-4 items-center h-20 px-2"><a class="flex flex-col items-center justify-center gap-1 min-h-[44px] py-1 text-[#506557] hover:text-[#16854B] transition-colors" data-path="captura" href="#"><span class="material-symbols-outlined text-[24px]">sensors</span><span class="font-headline text-[11px]">Captura</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-1 min-h-[44px] py-1 transition-colors text-[#16854B] font-semibold" data-path="entrenamiento" href="#"><span class="material-symbols-outlined text-[24px]">model_training</span><span class="font-headline text-[11px]">Entrenamiento</span></a><a class="flex flex-col items-center justify-center gap-1 min-h-[44px] py-1 text-[#506557] hover:text-[#16854B] transition-colors" data-path="prediccion" href="#"><span class="material-symbols-outlined text-[24px] mb-0.5">psychology</span><span class="font-headline text-[11px]">Predicción</span></a><a class="flex flex-col items-center justify-center gap-1 min-h-[44px] py-1 text-[#506557] hover:text-[#16854B] transition-colors" data-path="pendientes" href="#"><div class="relative flex items-center justify-center"><span class="material-symbols-outlined text-[24px] mb-0.5">pending_actions</span><span class="absolute top-0 right-0 w-2 h-2 bg-[#2DBE71] rounded-full"></span></div><span class="font-headline text-[11px]">Pendientes</span></a></div></nav>
+
+
+</body></html>

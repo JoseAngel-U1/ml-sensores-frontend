@@ -19,7 +19,7 @@ El proyecto contempla la recolección de datos etiquetados, el almacenamiento lo
 - TypeScript (migración validada en Xiaomi 11T)
 - Vite
 - Capacitor
-- SQLite (integración inicial implementada; validación de persistencia pendiente)
+- SQLite (integración inicial y persistencia validadas según confirmación del usuario)
 
 **Backend (planificado)**
 - Python
@@ -35,6 +35,8 @@ El proyecto contempla la recolección de datos etiquetados, el almacenamiento lo
 ## Estado del proyecto
 
 Actualmente se completó la prueba de concepto para acceder a los sensores de movimiento desde una aplicación Android desarrollada con React y Capacitor.
+
+La Fase 2 (TypeScript y almacenamiento SQLite) está completada. La Fase 3 está en planificación, con arquitectura aprobada para dos páginas —Entrenamiento y Predicción— y sus vistas internas Captura y Sincronizar; su implementación aún está pendiente.
 
 Resultados de una captura de prueba de 10 segundos:
 
@@ -52,7 +54,7 @@ Estos resultados corresponden a una prueba realizada en un Xiaomi 11T.
 
 - Recolección de sesiones etiquetadas para entrenamiento.
 - Captura de nuevas sesiones sin etiqueta para predicción.
-- Almacenamiento local mediante SQLite.
+- Guardado de capturas reales mediante el servicio SQLite existente.
 - Sincronización manual con una API desarrollada en FastAPI.
 - Persistencia remota en MongoDB.
 - Entrenamiento y comparación de modelos de clasificación.
@@ -104,6 +106,8 @@ La captura de sensores debe probarse en un dispositivo compatible; su funcionami
 ## Organización del proyecto
 
 El diseño aprobado de SQLite, la API de almacenamiento y el procedimiento de prueba manual están documentados en [docs/SQLITE_DESIGN.md](docs/SQLITE_DESIGN.md). La interfaz incluye una sección temporal de prueba con datos sintéticos, independiente de la captura de sensores.
+
+La arquitectura aprobada de páginas, rutas, componentes compartidos y tema claro de la Fase 3 está en [docs/UI_ARCHITECTURE.md](docs/UI_ARCHITECTURE.md). El avance y las tareas verificables se mantienen en `WORK_STATUS.md` y `ROADMAP.md`.
 
 El proyecto se encuentra en desarrollo. Su estructura se ampliará conforme se implementen los módulos de captura, persistencia local y sincronización.
 

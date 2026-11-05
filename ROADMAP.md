@@ -30,14 +30,22 @@ Resultado de referencia: 601 mediciones válidas en 10 segundos, con frecuencia 
 
 ## Fase 3 — Interfaz y captura
 
-**Estado: Pendiente**
+**Estado: En progreso — tarea 3.1 completada y validada por el usuario; siguiente tarea: 3.2**
 
-- [ ] Crear navegación y tema visual.
-- [ ] Implementar módulo de recolección etiquetada.
-- [ ] Implementar módulo de nuevas entradas para predicción.
-- [ ] Incorporar cuenta regresiva de 3 segundos.
-- [ ] Validar capturas y guardar registros.
-- [ ] Implementar vista de registros pendientes.
+Referencia: [docs/UI_ARCHITECTURE.md](docs/UI_ARCHITECTURE.md). Solo dos páginas principales (`TrainingPage` y `PredictionPage`), cada una con vistas internas Captura y Sincronizar. Rutas aprobadas: `/entrenamiento`, `/entrenamiento/sincronizar`, `/prediccion` y `/prediccion/sincronizar`. `App.tsx` definirá las rutas y redirigirá las desconocidas a `/entrenamiento`; `AppLayout` compartirá encabezado, navegación inferior y contenido activo.
+
+- [x] Documentar arquitectura, reutilización de código existente y paleta exclusivamente clara.
+- [x] **3.1 — Extraer el hook reutilizable de sensores.** Completada y validada por el usuario. La lógica está separada de `App.tsx` en `useSensorCapture`; la captura de 10 segundos sigue funcionando, con frecuencia medida, validación, mediciones completas en el resultado y limpieza de recursos.
+- [ ] **3.2 — Implementar navegación con React Router.** Crear las dos páginas y `AppLayout` con encabezado y navegación inferior funcionales. Verificar las cuatro rutas, cambio de vistas, redirección de `/` y rutas desconocidas, historial y botón Atrás en Android.
+- [ ] **3.3 — Aplicar el tema claro compartido.** Usar [docs/design/DESIGN.md](docs/design/DESIGN.md) como fuente oficial de estilos y [docs/design/references/](docs/design/references/) para las cuatro vistas; aplicar la prioridad de Functional Palette y las equivalencias claras ya corregidas en el YAML, según la sección 6 de `docs/UI_ARCHITECTURE.md`. Interpretar los tokens adicionales solo si se utilizan. Verificar ambas páginas, legibilidad y ausencia de modo oscuro/selector de temas.
+- [ ] **3.4 — Compartir componentes de captura.** Reloj y controles para ambos módulos; selector `quieto`/`caminando`/`corriendo` solo en entrenamiento. Verificar que predicción no solicite actividad.
+- [ ] **3.5 — Incorporar cuenta regresiva de 3 segundos.** Separarla de los 10 segundos de captura; definir navegación durante captura y verificar temporizadores, limpieza y ausencia de sesiones superpuestas.
+- [ ] **3.6 — Integrar guardado de entrenamiento.** Resolver exposición de muestras completas/métricas numéricas y tratamiento de muestras incompletas; construir `Registro` con actividad obligatoria, UUID, fecha ISO y estado pendiente. Verificar guardado y recuperación mediante SQLite existente, incluyendo errores.
+- [ ] **3.7 — Integrar guardado de predicción.** Reutilizar hook, controles y servicio; guardar `tipo: prediccion` y `actividad: null`. Verificar recuperación y persistencia sin conexión.
+- [ ] **3.8 — Implementar vistas internas Sincronizar.** Reutilizar tarjetas/listados, consultar registros locales y filtrar por tipo; verificar estados pendiente/sincronizado, carga, vacío y error. El envío manual real queda en Fase 4; no simularlo ni marcar éxito remoto.
+- [ ] **3.9 — Validar el flujo completo en Android.** Verificar ambos módulos, reinicio de capturas, persistencia tras cerrar/reabrir y navegación; retirar la prueba temporal de la interfaz principal cuando el flujo equivalente esté validado.
+
+Las verificaciones de tipos, lint, build y Android de cada tarea serán ejecutadas manualmente por el usuario. Crear carpetas y componentes progresivamente, sin duplicar servicios/tipos existentes ni generar archivos vacíos.
 
 ## Fase 4 — Backend y sincronización
 

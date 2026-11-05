@@ -76,6 +76,10 @@ Actualizar `WORK_STATUS.md` al completar una etapa o cambiar el estado de una ta
 
 No marcar una funcionalidad como terminada sin haberla verificado.
 
+Para tareas de interfaz y captura de la Fase 3, consultar `docs/UI_ARCHITECTURE.md` como referencia de organización y reutilización. Crear las piezas progresivamente según su responsabilidad y reutilizar los servicios y tipos existentes.
+
+Para estilos, usar `docs/design/DESIGN.md` como fuente oficial del sistema de Google Stitch y `docs/design/references/` para las capturas de las cuatro vistas, manteniendo exclusivamente el tema claro. Consultar las discrepancias documentadas en la sección 6 de `docs/UI_ARCHITECTURE.md` antes de sustituir colores.
+
 ## 7. Ejecución de comandos y ahorro de tokens
 
 El usuario será responsable de ejecutar manualmente los comandos de terminal.

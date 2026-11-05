@@ -22,4 +22,7 @@ export interface ResultadoCaptura {
   duracion: string;
   primera: MedicionSensor | null;
   ultima: MedicionSensor | null;
+  // Instantánea completa de la sesión finalizada, incluidas las muestras incompletas.
+  // Se conserva para un guardado posterior; el hook no realiza persistencia.
+  mediciones: MedicionSensor[];
 }

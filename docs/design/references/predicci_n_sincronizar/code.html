@@ -1,0 +1,138 @@
+<!DOCTYPE html><html class="light" lang="es"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"><meta content="mobile_tab" name="shell-type"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;background-color:#F5F8F5;color:#172C20;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "bg-main": "#F5F8F5", "text-main": "#172C20", "text-secondary": "#506557", "brand-green": "#16854B", "badge-bg": "#E4F3E9", "card-bg": "#FFFFFF", "card-border": "#E2EBE4" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-sm": "0.5rem", "space-xl": "1.75rem", "space-md": "1rem", "margin": "1.25rem", "gutter": "1rem", "space-xs": "0.25rem", "space-lg": "1.25rem" }, fontFamily: { "label-lg": ["Inter"], "headline-lg": ["Inter"], "label-sm": ["Inter"], "label-md": ["Inter"], "headline-sm": ["Inter"], "body-lg": ["Inter"], "body-md": ["Inter"], "body-sm": ["Inter"], "display-stat": ["Inter"], "headline-md": ["Inter"], "headline-lg-mobile": ["Inter"] }, fontSize: { "label-lg": ["15px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "600" }], "headline-lg": ["32px", { "lineHeight": "38px", "fontWeight": "700" }], "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.03em", "fontWeight": "500" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "600" }], "headline-sm": ["16px", { "lineHeight": "22px", "fontWeight": "600" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "display-stat": ["36px", { "lineHeight": "40px", "fontWeight": "700" }], "headline-md": ["20px", { "lineHeight": "26px", "fontWeight": "600" }], "headline-lg-mobile": ["26px", { "lineHeight": "32px", "fontWeight": "700" }] } } } }</script></head><body class="bg-[#F5F8F5] font-body-md text-[#172C20] antialiased flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-[#F5F8F5]/90 backdrop-blur-xl border-b border-[#E2EBE4]"><div class="flex justify-between items-center px-margin pt-space-xs text-[#506557] font-label-sm text-label-sm select-none"><span class="font-semibold text-[#172C20]">13:31</span><div class="flex items-center gap-space-xs text-[#506557]"><span class="material-symbols-outlined text-[16px]">signal_cellular_alt</span><span class="material-symbols-outlined text-[16px]">wifi</span><span class="material-symbols-outlined text-[16px]">battery_full</span></div></div><div class="h-16 px-margin flex items-center justify-between"><div class="flex items-center gap-space-sm"><button aria-label="Menu" class="w-11 h-11 flex items-center justify-center rounded-xl bg-white border border-[#E2EBE4] text-[#172C20] hover:text-[#16854B] shadow-sm transition-colors"><span class="material-symbols-outlined text-[24px]">menu</span></button><h1 class="font-headline-md text-headline-md text-[#172C20] tracking-tight truncate">ML Sensor</h1></div></div><div class="w-full h-[2px] bg-[#16854B]"></div></header><main class="flex flex-col relative w-full px-margin pt-24 pb-28 bg-[#F5F8F5]"><div class="flex flex-col w-full"><div class="mb-space-xl"><h2 class="font-headline-md text-headline-md text-[#172C20] tracking-tight font-semibold">Predicción</h2><p class="font-body-md text-body-md text-[#506557] mt-1">Datos a predecir por el modelo</p></div>
+<div class="flex items-center justify-between mb-space-sm px-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="w-2 h-2 rounded-full bg-[#16854B] animate-pulse"></span>
+<span class="font-label-sm text-label-sm text-[#506557] uppercase tracking-wider">Telemetría Local</span>
+</div>
+<span class="font-label-sm text-label-sm text-[#506557] bg-[#E4F3E9] px-space-sm py-0.5 rounded-full font-medium" id="queue-counter">3 no sincronizados</span>
+</div>
+<div class="flex flex-col gap-space-sm w-full mb-space-xl" id="sync-list">
+<div class="group relative flex items-center justify-between p-space-md bg-white rounded-xl border border-[#E2EBE4] shadow-sm hover:border-[#16854B]/30 transition-all duration-200">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-10 h-10 rounded-lg bg-[#F5F8F5] border border-[#E2EBE4] flex items-center justify-center text-[#506557] group-hover:text-[#16854B] transition-colors flex-shrink-0">
+<span class="material-symbols-outlined text-[22px]">description</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-sm text-headline-sm text-[#172C20] tracking-tight truncate">ID: REG-001</span>
+<div class="flex items-center gap-1.5 text-[#506557]">
+<span class="material-symbols-outlined text-[13px]">timer</span>
+<span class="font-body-sm text-body-sm">Tiempo: 5 s</span>
+</div>
+</div>
+</div>
+<div class="flex-shrink-0 ml-space-sm">
+<span class="inline-flex items-center px-space-sm py-1 rounded-full font-label-sm text-label-sm font-semibold text-[#16854B] bg-[#E4F3E9]">
+          Pendiente
+        </span>
+</div>
+</div>
+<div class="group relative flex items-center justify-between p-space-md bg-white rounded-xl border border-[#E2EBE4] shadow-sm hover:border-[#16854B]/30 transition-all duration-200">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-10 h-10 rounded-lg bg-[#F5F8F5] border border-[#E2EBE4] flex items-center justify-center text-[#506557] group-hover:text-[#16854B] transition-colors flex-shrink-0">
+<span class="material-symbols-outlined text-[22px]">description</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-sm text-headline-sm text-[#172C20] tracking-tight truncate">ID: REG-002</span>
+<div class="flex items-center gap-1.5 text-[#506557]">
+<span class="material-symbols-outlined text-[13px]">timer</span>
+<span class="font-body-sm text-body-sm">Tiempo: 10 s</span>
+</div>
+</div>
+</div>
+<div class="flex-shrink-0 ml-space-sm">
+<span class="inline-flex items-center px-space-sm py-1 rounded-full font-label-sm text-label-sm font-semibold text-[#16854B] bg-[#E4F3E9]">
+          Pendiente
+        </span>
+</div>
+</div>
+<div class="group relative flex items-center justify-between p-space-md bg-white rounded-xl border border-[#E2EBE4] shadow-sm hover:border-[#16854B]/30 transition-all duration-200">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-10 h-10 rounded-lg bg-[#F5F8F5] border border-[#E2EBE4] flex items-center justify-center text-[#506557] group-hover:text-[#16854B] transition-colors flex-shrink-0">
+<span class="material-symbols-outlined text-[22px]">description</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-sm text-headline-sm text-[#172C20] tracking-tight truncate">ID: REG-003</span>
+<div class="flex items-center gap-1.5 text-[#506557]">
+<span class="material-symbols-outlined text-[13px]">timer</span>
+<span class="font-body-sm text-body-sm">Tiempo: 5 s</span>
+</div>
+</div>
+</div>
+<div class="flex-shrink-0 ml-space-sm">
+<span class="inline-flex items-center px-space-sm py-1 rounded-full font-label-sm text-label-sm font-semibold text-[#16854B] bg-[#E4F3E9]">
+          Pendiente
+        </span>
+</div>
+</div>
+</div>
+
+<div class="w-full pt-space-xs pb-space-sm">
+<button class="w-full h-[52px] bg-[#16854B] text-white font-label-lg text-label-lg rounded-xl flex items-center justify-center gap-space-sm shadow-sm active:scale-[0.98] transition-all duration-200" id="sync-button" type="button">
+<span class="material-symbols-outlined text-[22px] transition-transform duration-700" id="sync-icon">sync</span>
+<span class="" id="sync-label">Sincronizar</span>
+</button>
+</div>
+</div>
+<script>
+  (function () {
+    const btn = document.getElementById('sync-button');
+    const icon = document.getElementById('sync-icon');
+    const label = document.getElementById('sync-label');
+    const counter = document.getElementById('queue-counter');
+    const list = document.getElementById('sync-list');
+
+    if (!btn) return;
+
+    let isSyncing = false;
+
+    btn.addEventListener('click', function () {
+      if (isSyncing) return;
+      isSyncing = true;
+
+      icon.classList.add('animate-spin');
+      label.textContent = 'Sincronizando...';
+      btn.classList.add('opacity-90');
+
+      setTimeout(() => {
+        icon.classList.remove('animate-spin');
+        icon.textContent = 'check_circle';
+        label.textContent = 'Sincronizado';
+        btn.classList.remove('bg-[#16854B]');
+        btn.classList.add('bg-[#1e7a46]');
+
+        if (counter) {
+          counter.textContent = 'Al día';
+          counter.classList.remove('text-[#506557]');
+          counter.classList.add('text-[#16854B]');
+        }
+
+        const badges = list.querySelectorAll('span.bg-\\[\\#E4F3E9\\]');
+        badges.forEach(badge => {
+          badge.textContent = 'Completado';
+          badge.classList.remove('text-[#16854B]', 'text-[#506557]');
+          badge.classList.add('text-[#16854B]');
+        });
+
+        setTimeout(() => {
+          icon.textContent = 'sync';
+          label.textContent = 'Sincronizar';
+          btn.classList.remove('bg-[#1e7a46]');
+          btn.classList.add('bg-[#16854B]');
+          isSyncing = false;
+        }, 2600);
+      }, 1400);
+    });
+  })();
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-[#F5F8F5]/90 backdrop-blur-xl border-t border-[#E2EBE4] shadow-sm"><div class="grid grid-cols-4 items-center h-20 px-space-xs"><a class="flex flex-col items-center justify-center gap-1 min-h-[44px] py-1 text-[#506557] hover:text-[#16854B] transition-colors" data-path="captura" href="#"><span class="material-symbols-outlined text-[24px]">sensors</span><span class="font-label-sm text-label-sm">Captura</span></a><a class="flex flex-col items-center justify-center gap-1 min-h-[44px] py-1 text-[#506557] hover:text-[#16854B] transition-colors" data-path="entrenamiento" href="#"><span class="material-symbols-outlined text-[24px]">model_training</span><span class="font-label-sm text-label-sm">Entrenamiento</span></a><button class="flex flex-col items-center justify-center py-1.5 px-1 text-[#8CA897] hover:text-[#F0F7F2] focus:outline-none transition-colors" type="button">
+<span class="material-symbols-outlined text-2xl mb-0.5">psychology</span>
+<span class="text-[11px] font-medium tracking-tight">Predicción</span>
+</button><button class="flex flex-col items-center justify-center py-1.5 px-1 text-[#8CA897] hover:text-[#F0F7F2] focus:outline-none transition-colors" type="button">
+<div class="relative">
+<span class="material-symbols-outlined text-2xl mb-0.5">pending_actions</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-[#2DBE71] rounded-full"></span>
+</div>
+<span class="text-[11px] font-medium tracking-tight">Pendientes</span>
+</button></div></nav>
+
+
+</body></html>

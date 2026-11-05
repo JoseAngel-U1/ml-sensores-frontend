@@ -3,15 +3,26 @@ import { Capacitor } from "@capacitor/core";
 import { getPendingRecords, getRecordById, getRecords, initializeDatabase, saveRecord } from "../services/database";
 import type { Registro } from "../types/records";
 
+/**
+ *! Presenta controles temporales para verificar SQLite con datos sintéticos,
+ *! de forma independiente a la captura real de sensores.
+ * @returns //? Sección de React con acciones de prueba, resultados y errores visibles.
+ */
 export default function DatabaseTest() {
+  //* El estado deshabilita los controles; la referencia bloquea clics consecutivos
+  //* inmediatamente, incluso antes de que React vuelva a renderizar la interfaz.
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
   const [message, setMessage] = useState("Base de datos sin inicializar en esta sesión.");
   const [error, setError] = useState<string | null>(null);
+  // Estos datos solo representan lo mostrado en pantalla. La persistencia real
+  // reside en SQLite y se comprueba volviendo a consultar después de reabrir la app.
   const [records, setRecords] = useState<Registro[]>([]);
   const [id, setId] = useState("");
   const [selected, setSelected] = useState<Registro | null>(null);
 
+  //TODO: Centraliza la exclusión de acciones simultáneas y los errores de la prueba.
+  //* finally libera los controles tanto si la operación termina bien como si falla.
   async function execute(operation: () => Promise<void>): Promise<void> {
     if (busyRef.current) return;
     busyRef.current = true;
@@ -27,15 +38,21 @@ export default function DatabaseTest() {
     }
   }
 
+  //TODO: Permite verificar explícitamente la apertura y repetir la inicialización
+  //todo sin crear otra base ni borrar los registros existentes.
   async function initialize(): Promise<void> {
     await initializeDatabase();
     setMessage("Base ml_sensores inicializada.");
   }
 
+  //TODO: Genera una sesión de ejemplo en el dispositivo. Sus valores conocidos sirven
+  //todo para comprobar el recorrido escritura/lectura sin depender de los sensores.
   async function saveTest(): Promise<void> {
     if (Capacitor.getPlatform() !== "android") {
       throw new Error("Genera y guarda el registro de prueba desde Android.");
     }
+    //* Cada prueba recibe un UUID y fecha nuevos. Las dos muestras son sintéticas;
+    //* la duración y frecuencia describen el ejemplo, no una captura física.
     const record: Registro = {
       id: crypto.randomUUID(),
       tipo: "entrenamiento",
@@ -53,6 +70,9 @@ export default function DatabaseTest() {
     await saveRecord(record);
     setId(record.id);
     setMessage(`Registro guardado: ${record.id}. Verificando lectura…`);
+    //* La lectura por UUID y la comparación del JSON verifican la recuperación
+    //* inmediata. La persistencia entre ejecuciones requiere además cerrar la app,
+    //* reabrirla y consultar este UUID sin volver a guardar el registro.
     const recovered = await getRecordById(record.id);
     if (recovered === null || JSON.stringify(recovered.mediciones) !== JSON.stringify(record.mediciones)) {
       throw new Error("El registro se guardó, pero la verificación de sus mediciones recuperadas falló.");
@@ -62,12 +82,16 @@ export default function DatabaseTest() {
     setMessage(`Guardado y recuperado por UUID: ${record.id}. JSON verificado.`);
   }
 
+  //TODO: Ambas vistas consultan SQLite de nuevo; el filtro de pendientes no modifica
+  //todo los estados ni simula una sincronización con un servidor.
   async function list(pending: boolean): Promise<void> {
     const result = await (pending ? getPendingRecords() : getRecords());
     setRecords(result);
     setMessage(`${result.length} registros ${pending ? "pendientes" : "guardados"}.`);
   }
 
+  //TODO: Permite introducir un UUID anotado antes de cerrar la aplicación. Limpiar
+  //todo la selección evita mostrar el resultado anterior si la nueva consulta falla.
   async function findById(): Promise<void> {
     setSelected(null);
     const result = await getRecordById(id.trim());
@@ -75,6 +99,9 @@ export default function DatabaseTest() {
     setMessage(result ? `Recuperado: ${result.id}` : "No existe un registro con ese UUID.");
   }
 
+  //TODO: La interfaz reúne acciones manuales y mensajes de diagnóstico. La lista
+  //todo identifica registros y estados; el detalle JSON permite revisar las muestras
+  //todo efectivamente recuperadas de SQLite, no solo el objeto usado al insertarlas.
   return (
     <section style={{ marginTop: "30px" }} aria-labelledby="sqlite-test-title">
       <h2 id="sqlite-test-title">Prueba temporal de SQLite</h2>
