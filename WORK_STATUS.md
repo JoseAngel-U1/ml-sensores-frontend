@@ -2,9 +2,9 @@
 
 ## Estado general
 
-**Etapa actual:** Fase 3 — Interfaz y captura, en progreso. Tareas 3.1 y 3.2 completadas; fases 1 y 2 completadas.
+**Etapa actual:** Fase 3 — Interfaz y captura, en progreso. Tareas 3.1, 3.2 y 3.3 completadas y validadas; fases 1 y 2 completadas.
 
-**Estado de la tarea:** 3.3 — Base visual compartida clara implementada, pendiente de verificaciones manuales y validación visual del usuario. La navegación de 3.2 fue validada por el usuario en navegador y Android, conservando las pruebas de sensores y SQLite.
+**Estado de la tarea:** 3.3 — Tema visual claro completado y validado por el usuario, quien confirmó haber realizado el commit de la implementación. La navegación de 3.2 conserva su validación en navegador y Android. Siguiente tarea: 3.4 — Componentes de captura, pendiente de iniciar.
 
 ## Trabajo completado
 
@@ -24,6 +24,7 @@
 - ESLint adaptado a TypeScript, excluyendo assets generados y compilaciones de Android.
 - Tarea 3.1 completada: lógica de captura separada de `App.tsx` en el hook reutilizable `src/hooks/useSensorCapture.ts`, con funcionamiento validado por el usuario.
 - Tarea 3.2 completada: navegación entre las cuatro rutas y pruebas existentes validadas por el usuario tanto en navegador como en Android.
+- Tarea 3.3 completada: tema visual claro validado por el usuario; commit de la implementación realizado por el usuario según su confirmación.
 
 ## Verificación de la migración (2026-11-04)
 
@@ -77,11 +78,11 @@
 
 - Arquitectura y tareas verificables documentadas; hook de la tarea 3.1 validado. Creadas las dos páginas provisionales y estructura compartida de navegación; el diseño definitivo sigue pendiente.
 - La captura permanece en `src/hooks/useSensorCapture.ts`. La interfaz de prueba se trasladó a `src/components/CaptureTest.tsx`, que consume el hook e incluye `DatabaseTest`; está accesible en Captura de Entrenamiento.
-- `App.tsx` declara rutas y `main.tsx` configura `BrowserRouter`. La base visual compartida de 3.3 está implementada y pendiente de validación; las vistas definitivas siguen pendientes.
+- `App.tsx` declara rutas y `main.tsx` configura `BrowserRouter`. La base visual compartida de 3.3 está completada y validada por el usuario; las vistas definitivas siguen pendientes.
 - Dependencias de navegación ya declaradas en `package.json`: `react-router-dom: ^7.18.5` y `@capacitor/app: ^8.1.2`. No se añadieron dependencias para el tema visual.
 - Las muestras completas ya se exponen en `resultado.mediciones`. Antes de integrar el guardado real, quedan por definir las métricas numéricas sin redondear, el tratamiento de muestras incompletas y la política de navegación durante captura.
 - La tarea 3.1 modificó hook, consumo en App y el tipo de resultado; el usuario confirmó que las pruebas funcionan correctamente. El agente no ejecutó comandos ni verificaciones de código.
-- Sistema de Stitch y cuatro capturas disponibles y referenciados. Functional Palette tiene prioridad definitiva; se corrigieron en el YAML los tokens `background`, `surface`, `primary`, `on-background` y `on-surface`. Los roles adicionales sin equivalencia confirmada se conservan y se interpretarán solo si se utilizan, según la sección 6 de `docs/UI_ARCHITECTURE.md`. La base visual está lista para implementar; el orden y estado de las tareas de Fase 3 se conservan.
+- Sistema de Stitch y cuatro capturas disponibles y referenciados. Functional Palette tiene prioridad definitiva; se corrigieron en el YAML los tokens `background`, `surface`, `primary`, `on-background` y `on-surface`. Los roles adicionales sin equivalencia confirmada se conservan y se interpretarán solo si se utilizan, según la sección 6 de `docs/UI_ARCHITECTURE.md`. La base visual compartida ya está implementada y validada en 3.3; las tareas posteriores siguen pendientes.
 
 ## Validación completada
 
@@ -174,7 +175,7 @@ No se modificaron `useSensorCapture.ts`, `database.ts`, `DatabaseTest.tsx` ni ar
 
 Dependencias incorporadas por el usuario: `react-router-dom` versión mayor 7 y `@capacitor/app` versión mayor 8, alineada con Capacitor 8. El plugin App se utiliza para el botón Atrás físico. No se requieren paquetes de tipos adicionales para Router.
 
-Comandos de referencia de la tarea 3.2 (instalación ya realizada por el usuario; no es necesario repetirla para 3.3):
+Comandos de referencia de la tarea 3.2 (instalación ya realizada por el usuario; no es necesario repetirla para las tareas posteriores):
 
 ```bash
 npm install react-router-dom@7 @capacitor/app@8
@@ -204,13 +205,13 @@ La sincronización registra el plugin App y copia el build; no editar archivos n
 - [x] Navegación validada en Android.
 - [x] Acceso y funcionamiento de las pruebas de sensores y SQLite conservados.
 
-La confirmación corresponde al usuario; el agente no ejecutó las verificaciones. Los cambios visuales posteriores de 3.3 requieren una nueva revisión de regresión.
+La confirmación corresponde al usuario; el agente no ejecutó las verificaciones. Los cambios visuales posteriores de 3.3 también fueron validados por el usuario.
 
 Limitaciones: SQLite sigue requiriendo Android; navegador permite revisar navegación y estructura pero no valida persistencia nativa. `BrowserRouter` necesita que un alojamiento web de producción devuelva `index.html` para rutas de la SPA; Vite dispone de fallback durante desarrollo, y la recarga de subrutas en Capacitor debe verificarse en el dispositivo. La conexión del botón Atrás exige instalar y sincronizar `@capacitor/app`; cualquier fallo de registro se informa en consola.
 
 **La tarea 3.2 queda completada en ROADMAP.md según confirmación del usuario.** La Fase 3 permanece en progreso.
 
-## Tarea 3.3 — Tema claro compartido implementado, pendiente de validar
+## Tarea 3.3 — Tema claro compartido completado y validado por el usuario
 
 ### Base visual
 
@@ -233,9 +234,11 @@ Limitaciones: SQLite sigue requiriendo Android; navegador permite revisar navega
 - Se mantienen las pruebas temporales y los textos provisionales. No se implementaron reloj circular, selector de actividad, controles definitivos, tarjetas/listas de registros, cuenta regresiva, guardado real ni sincronización.
 - No se modificaron los hooks de captura/navegación, `database.ts`, `DatabaseTest.tsx`, el mapa de rutas ni dependencias. El CSS compartido sí estiliza los controles existentes de la prueba SQLite.
 
-### Verificación manual pendiente de 3.3
+### Validación confirmada y referencia para futuras verificaciones
 
-El agente realizó revisión estática; no ejecutó instalaciones, compilación, lint, pruebas ni Git. Ejecutar manualmente desde `ml-sensores/`:
+El usuario confirmó que el tema visual claro funciona correctamente y que realizó el commit de su implementación. La tarea 3.3 queda completada según esa confirmación. El agente no ejecutó instalaciones, compilación, lint, pruebas ni Git, ni consultó el commit.
+
+Se conservan los comandos y el procedimiento siguientes como referencia de regresión para cambios futuros, no como pendientes del cierre de 3.3. Desde `ml-sensores/`:
 
 ```bash
 npm run typecheck
@@ -251,13 +254,17 @@ npx cap sync android
 npx cap open android
 ```
 
-- [ ] Verificar las cuatro rutas, redirecciones y navegación sin regresiones; comprobar Atrás en navegador y Android.
-- [ ] Revisar colores, superficies, textos, botones y selección activa de las dos barras de navegación en todas las vistas.
-- [ ] Revisar anchos de 320/360/390 px, tablet y escritorio; aumentar texto/zoom, comprobar que etiquetas, UUID y JSON no provocan desbordamiento de toda la página.
-- [ ] Probar foco por teclado y controles habilitados/deshabilitados (captura y fieldset SQLite), hover en escritorio y pulsación en móvil.
-- [ ] Comprobar que el tema permanece claro con la preferencia del sistema en oscuro y que reducción de movimiento elimina transiciones/escalado.
-- [ ] En Xiaomi 11T, revisar áreas seguras, gestos/botones del sistema, orientación horizontal y campo UUID con el teclado abierto; ningún control debe quedar inaccesible.
-- [ ] Repetir captura de 10 segundos y prueba SQLite en modo avión; comprobar legibilidad de resultados, consulta del UUID y persistencia.
-- [ ] Validar visualmente las diferencias documentadas, especialmente las fuentes alternativas locales.
+- Verificar las cuatro rutas, redirecciones y navegación sin regresiones; comprobar Atrás en navegador y Android.
+- Revisar colores, superficies, textos, botones y selección activa de las dos barras de navegación en todas las vistas.
+- Revisar anchos de 320/360/390 px, tablet y escritorio; aumentar texto/zoom, comprobar que etiquetas, UUID y JSON no provocan desbordamiento de toda la página.
+- Probar foco por teclado y controles habilitados/deshabilitados (captura y fieldset SQLite), hover en escritorio y pulsación en móvil.
+- Comprobar que el tema permanece claro con la preferencia del sistema en oscuro y que reducción de movimiento elimina transiciones/escalado.
+- En Xiaomi 11T, revisar áreas seguras, gestos/botones del sistema, orientación horizontal y campo UUID con el teclado abierto; ningún control debe quedar inaccesible.
+- Repetir captura de 10 segundos y prueba SQLite en modo avión; comprobar legibilidad de resultados, consulta del UUID y persistencia.
+- Validar visualmente las diferencias documentadas, especialmente las fuentes alternativas locales.
 
-**3.3 permanece sin completar hasta la confirmación del usuario.** Siguiente paso: validar esta base visual antes de abordar los componentes definitivos de 3.4.
+**3.3 queda completada y validada por el usuario.** La Fase 3 general permanece en progreso.
+
+## Siguiente tarea — 3.4: Componentes de captura
+
+**Pendiente de iniciar.** Compartir reloj y controles entre Entrenamiento y Predicción, con selector de actividad `quieto`/`caminando`/`corriendo` únicamente en Entrenamiento, según ROADMAP.md. No se ha iniciado su implementación en este cierre documental; las demás tareas conservan su estado.
