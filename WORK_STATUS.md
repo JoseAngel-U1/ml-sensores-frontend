@@ -2,9 +2,9 @@
 
 ## Estado general
 
-**Etapa actual:** Fase 3 — Interfaz y captura, en progreso. Tarea 3.1 completada; fases 1 y 2 completadas.
+**Etapa actual:** Fase 3 — Interfaz y captura, en progreso. Tareas 3.1 y 3.2 completadas; fases 1 y 2 completadas.
 
-**Estado de la tarea:** 3.2 — Navegación con React Router implementada en código, pendiente de instalación manual de dependencias y validación del usuario. La tarea 3.1 y SQLite conservan su estado validado anterior.
+**Estado de la tarea:** 3.3 — Base visual compartida clara implementada, pendiente de verificaciones manuales y validación visual del usuario. La navegación de 3.2 fue validada por el usuario en navegador y Android, conservando las pruebas de sensores y SQLite.
 
 ## Trabajo completado
 
@@ -23,6 +23,7 @@
 - Comando `npm run typecheck` e integración de la verificación de tipos en `npm run build`.
 - ESLint adaptado a TypeScript, excluyendo assets generados y compilaciones de Android.
 - Tarea 3.1 completada: lógica de captura separada de `App.tsx` en el hook reutilizable `src/hooks/useSensorCapture.ts`, con funcionamiento validado por el usuario.
+- Tarea 3.2 completada: navegación entre las cuatro rutas y pruebas existentes validadas por el usuario tanto en navegador como en Android.
 
 ## Verificación de la migración (2026-11-04)
 
@@ -64,7 +65,7 @@
 
 - Documento de referencia: `docs/UI_ARCHITECTURE.md`, con inventario del código existente, responsabilidades, estructura progresiva y diagrama Mermaid de navegación.
 - Dos páginas principales: `TrainingPage` y `PredictionPage`; cada una tendrá vistas internas Captura y Sincronizar.
-- React Router con cuatro rutas: `/entrenamiento`, `/entrenamiento/sincronizar`, `/prediccion`, `/prediccion/sincronizar`. `App.tsx` declara las rutas permitidas y la redirección de `/` y rutas desconocidas a `/entrenamiento`; pendiente de validación de la tarea 3.2.
+- React Router con cuatro rutas: `/entrenamiento`, `/entrenamiento/sincronizar`, `/prediccion`, `/prediccion/sincronizar`. `App.tsx` declara las rutas permitidas y la redirección de `/` y rutas desconocidas a `/entrenamiento`; navegación validada por el usuario en la tarea 3.2.
 - `AppLayout` compartido: encabezado, navegación inferior y espacio para la vista activa. La ruta determinará la vista seleccionada.
 - Organización por responsabilidades en `pages/`, `layouts/`, `shared/`, `components/capture/`, `components/records/`, `components/ui/`, `hooks/`, `services/` y `types/`, creada progresivamente.
 - Reutilizar reloj, controles, tarjetas, listas, servicio SQLite y tipos actuales. Entrenamiento requiere actividad; predicción almacena `null`. Ambos capturan 10 segundos, generan UUID en el dispositivo y guardan localmente como pendientes.
@@ -76,8 +77,8 @@
 
 - Arquitectura y tareas verificables documentadas; hook de la tarea 3.1 validado. Creadas las dos páginas provisionales y estructura compartida de navegación; el diseño definitivo sigue pendiente.
 - La captura permanece en `src/hooks/useSensorCapture.ts`. La interfaz de prueba se trasladó a `src/components/CaptureTest.tsx`, que consume el hook e incluye `DatabaseTest`; está accesible en Captura de Entrenamiento.
-- `App.tsx` declara rutas y `main.tsx` configura `BrowserRouter`. Se aplicaron estilos mínimos exclusivamente claros para navegación legible; el sistema visual completo corresponde a 3.3.
-- `react-router-dom` y `@capacitor/app` están pendientes de instalación manual. `package.json` y `package-lock.json` no se modificaron: el comando de instalación actualizará ambos. Hasta instalar las dependencias no se podrá verificar ni compilar el código nuevo.
+- `App.tsx` declara rutas y `main.tsx` configura `BrowserRouter`. La base visual compartida de 3.3 está implementada y pendiente de validación; las vistas definitivas siguen pendientes.
+- Dependencias de navegación ya declaradas en `package.json`: `react-router-dom: ^7.18.5` y `@capacitor/app: ^8.1.2`. No se añadieron dependencias para el tema visual.
 - Las muestras completas ya se exponen en `resultado.mediciones`. Antes de integrar el guardado real, quedan por definir las métricas numéricas sin redondear, el tratamiento de muestras incompletas y la política de navegación durante captura.
 - La tarea 3.1 modificó hook, consumo en App y el tipo de resultado; el usuario confirmó que las pruebas funcionan correctamente. El agente no ejecutó comandos ni verificaciones de código.
 - Sistema de Stitch y cuatro capturas disponibles y referenciados. Functional Palette tiene prioridad definitiva; se corrigieron en el YAML los tokens `background`, `surface`, `primary`, `on-background` y `on-surface`. Los roles adicionales sin equivalencia confirmada se conservan y se interpretarán solo si se utilizan, según la sección 6 de `docs/UI_ARCHITECTURE.md`. La base visual está lista para implementar; el orden y estado de las tareas de Fase 3 se conservan.
@@ -149,7 +150,7 @@ Revisar también el desmontaje durante una captura (mediante React DevTools o un
 
 **La tarea 3.1 queda completada y validada según confirmación del usuario.** El agente solo realizó revisión estática; no ejecutó tipos, lint, build ni pruebas.
 
-## Tarea 3.2 — Implementada en código; pendiente de instalación y validación
+## Tarea 3.2 — Completada y validada por el usuario
 
 ### Cambios realizados
 
@@ -171,9 +172,9 @@ No se modificaron `useSensorCapture.ts`, `database.ts`, `DatabaseTest.tsx` ni ar
 
 ### Dependencias y comandos manuales
 
-Dependencias pendientes: `react-router-dom` versión mayor 7 (compatible con React 19; requiere Node 20 o superior) y `@capacitor/app` versión mayor 8, alineada con Capacitor 8. El plugin App se utiliza para el botón Atrás físico. No se requieren paquetes de tipos adicionales para Router.
+Dependencias incorporadas por el usuario: `react-router-dom` versión mayor 7 y `@capacitor/app` versión mayor 8, alineada con Capacitor 8. El plugin App se utiliza para el botón Atrás físico. No se requieren paquetes de tipos adicionales para Router.
 
-El usuario ejecutará desde `ml-sensores/`, continuando solo cuando cada comando finalice correctamente:
+Comandos de referencia de la tarea 3.2 (instalación ya realizada por el usuario; no es necesario repetirla para 3.3):
 
 ```bash
 npm install react-router-dom@7 @capacitor/app@8
@@ -197,16 +198,66 @@ npx cap open android
 
 La sincronización registra el plugin App y copia el build; no editar archivos nativos manualmente. El agente no ejecutó instalaciones, comandos de Git, tipos, lint, build ni pruebas; solo realizó revisión estática.
 
-### Validaciones pendientes
+### Validación confirmada por el usuario
 
-- [ ] Instalar dependencias y confirmar typecheck, lint y build correctos.
-- [ ] Abrir las cuatro rutas directamente y recargarlas; cada una debe mostrar página y vista correctas. `/` y una ruta inexistente deben redirigir a `/entrenamiento`.
-- [ ] Navegar entre módulos y vistas mediante enlaces, sin recargas completas; comprobar indicadores activos y Atrás/Adelante del navegador.
-- [ ] Probar teclado, foco visible, lectura en pantalla pequeña y tema claro aun cuando el dispositivo prefiera modo oscuro.
-- [ ] En Xiaomi 11T, recorrer Entrenamiento Captura → Entrenamiento Sincronizar → Predicción Captura → Predicción Sincronizar; Atrás físico debe recorrer el historial inverso y, sin historial restante, salir de la aplicación.
-- [ ] Ejecutar una captura completa desde Entrenamiento y comprobar resultados. Iniciar otra, cambiar de vista y regresar: no debe continuar la sesión anterior ni duplicarse el temporizador; una nueva captura debe funcionar.
-- [ ] Guardar un registro sintético con `DatabaseTest`, cambiar de módulo, regresar y consultar el mismo UUID; verificar también cierre/reapertura y persistencia.
+- [x] Navegación entre las cuatro rutas validada en navegador.
+- [x] Navegación validada en Android.
+- [x] Acceso y funcionamiento de las pruebas de sensores y SQLite conservados.
+
+La confirmación corresponde al usuario; el agente no ejecutó las verificaciones. Los cambios visuales posteriores de 3.3 requieren una nueva revisión de regresión.
 
 Limitaciones: SQLite sigue requiriendo Android; navegador permite revisar navegación y estructura pero no valida persistencia nativa. `BrowserRouter` necesita que un alojamiento web de producción devuelva `index.html` para rutas de la SPA; Vite dispone de fallback durante desarrollo, y la recarga de subrutas en Capacitor debe verificarse en el dispositivo. La conexión del botón Atrás exige instalar y sincronizar `@capacitor/app`; cualquier fallo de registro se informa en consola.
 
-**La tarea 3.2 sigue pendiente en ROADMAP.md hasta la confirmación del usuario.** Fase 3 permanece en progreso; las demás tareas y fases no cambian. El siguiente paso es validar esta navegación antes de iniciar 3.3.
+**La tarea 3.2 queda completada en ROADMAP.md según confirmación del usuario.** La Fase 3 permanece en progreso.
+
+## Tarea 3.3 — Tema claro compartido implementado, pendiente de validar
+
+### Base visual
+
+- `src/index.css`: centraliza la paleta oficial en `--color-background`, `--color-surface`, `--color-primary`, `--color-primary-soft`, `--color-text`, `--color-text-secondary` y `--color-on-primary`.
+- Tokens complementarios tomados del cuerpo de DESIGN.md: borde `#DCE7DF`, hover primario `#0D532E`, colores de aviso, radios de controles de 4 px y tarjetas de 8 px, sombras sutiles y escala de espaciado de 2 a 48 px. No se reinterpretaron los tokens ambiguos del YAML.
+- Tipografía: familias `Space Grotesk` para interfaz y `JetBrains Mono` para datos, con alternativas locales de sistema; tamaños responsivos y cifras tabulares en tiempo/JSON. No se añadieron fuentes remotas ni dependencias visuales.
+- `AppLayout` recibe el estilo mediante sus clases existentes: fondo claro, contenido adaptable hasta 1440 px y barras sticky en el flujo del documento. Márgenes móviles de 16 px, tablet de 24 px y escritorio de 40 px.
+- `Header`: identidad ML Sensores, marca SVG decorativa no interactiva, línea verde y separación consistente. Sin menú ficticio ni selector de temas.
+- `BottomNavigation`: conserva los dos NavLink, sus rutas y estado activo; incorpora iconos SVG locales, etiquetas visibles y estilos de foco/hover/selección sin cambiar la lógica de navegación.
+- Controles de vistas, botones, campos y superficies comparten estilos. Estados hover, active, focus-visible y disabled; objetivos táctiles mínimos de 44 px. Las transiciones y el escalado al pulsar se desactivan con reducción de movimiento.
+- Vistas provisionales con `.surface-card` y texto secundario. `CaptureTest` usa las clases compartidas en lugar de estilos en línea para botón, resultados y JSON. El comportamiento de la prueba se conserva.
+- `index.html`: idioma español y `viewport-fit=cover`; CSS contempla insets superior, inferior, izquierdo y derecho, y reserva de desplazamiento para el foco. No se deshabilita el zoom ni se modifican archivos nativos Android.
+
+### Alcance y diferencias respecto a Stitch
+
+- Se revisaron las cuatro capturas y sus HTML. La arquitectura aprobada conserva dos módulos inferiores y dos vistas internas; las referencias muestran cuatro accesos inferiores. No se agregaron rutas ni módulos para reproducir esa diferencia.
+- Se sigue DESIGN.md para radios, espaciados y familias tipográficas, aunque algunos HTML usan Inter, radios mayores y otros márgenes. No se reproduce la barra ficticia de hora/batería ni el menú lateral de las capturas.
+- Iconos SVG locales simplificados en lugar de Material Symbols descargado de Google. Sin Tailwind, librerías de componentes ni recursos visuales de red.
+- No hay archivos de Space Grotesk ni JetBrains Mono empaquetados en el proyecto. Las familias están declaradas y se usarán si están instaladas; en Android normalmente se verán las alternativas del sistema. Para fidelidad tipográfica exacta offline faltan los archivos de fuente y su licencia para incorporarlos localmente en una tarea autorizada.
+- Se mantienen las pruebas temporales y los textos provisionales. No se implementaron reloj circular, selector de actividad, controles definitivos, tarjetas/listas de registros, cuenta regresiva, guardado real ni sincronización.
+- No se modificaron los hooks de captura/navegación, `database.ts`, `DatabaseTest.tsx`, el mapa de rutas ni dependencias. El CSS compartido sí estiliza los controles existentes de la prueba SQLite.
+
+### Verificación manual pendiente de 3.3
+
+El agente realizó revisión estática; no ejecutó instalaciones, compilación, lint, pruebas ni Git. Ejecutar manualmente desde `ml-sensores/`:
+
+```bash
+npm run typecheck
+npm run lint
+npm run build
+npm run dev
+```
+
+Para actualizar y probar Android después del build:
+
+```bash
+npx cap sync android
+npx cap open android
+```
+
+- [ ] Verificar las cuatro rutas, redirecciones y navegación sin regresiones; comprobar Atrás en navegador y Android.
+- [ ] Revisar colores, superficies, textos, botones y selección activa de las dos barras de navegación en todas las vistas.
+- [ ] Revisar anchos de 320/360/390 px, tablet y escritorio; aumentar texto/zoom, comprobar que etiquetas, UUID y JSON no provocan desbordamiento de toda la página.
+- [ ] Probar foco por teclado y controles habilitados/deshabilitados (captura y fieldset SQLite), hover en escritorio y pulsación en móvil.
+- [ ] Comprobar que el tema permanece claro con la preferencia del sistema en oscuro y que reducción de movimiento elimina transiciones/escalado.
+- [ ] En Xiaomi 11T, revisar áreas seguras, gestos/botones del sistema, orientación horizontal y campo UUID con el teclado abierto; ningún control debe quedar inaccesible.
+- [ ] Repetir captura de 10 segundos y prueba SQLite en modo avión; comprobar legibilidad de resultados, consulta del UUID y persistencia.
+- [ ] Validar visualmente las diferencias documentadas, especialmente las fuentes alternativas locales.
+
+**3.3 permanece sin completar hasta la confirmación del usuario.** Siguiente paso: validar esta base visual antes de abordar los componentes definitivos de 3.4.

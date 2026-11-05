@@ -10,9 +10,9 @@ export default function PredictionPage() {
         <NavLink to="/prediccion" end>Captura</NavLink>
         <NavLink to="/prediccion/sincronizar" end>Sincronizar</NavLink>
       </nav>
-      <section aria-labelledby="prediction-view-title">
+      <section className="surface-card" aria-labelledby="prediction-view-title">
         <h2 id="prediction-view-title">{sincronizar ? "Sincronizar predicción" : "Captura para predicción"}</h2>
-        <p>
+        <p className="text-secondary">
           {sincronizar
             ? "Vista provisional. El listado de registros y la sincronización manual se incorporarán en tareas posteriores."
             : "Vista provisional. La captura para predicción se incorporará en una tarea posterior. La prueba funcional está disponible en Captura de Entrenamiento."}

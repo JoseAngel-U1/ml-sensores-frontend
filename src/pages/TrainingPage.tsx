@@ -12,9 +12,9 @@ export default function TrainingPage() {
         <NavLink to="/entrenamiento/sincronizar" end>Sincronizar</NavLink>
       </nav>
       {sincronizar ? (
-        <section aria-labelledby="training-sync-title">
+        <section className="surface-card" aria-labelledby="training-sync-title">
           <h2 id="training-sync-title">Sincronizar entrenamiento</h2>
-          <p>Vista provisional. El listado de registros y la sincronización manual se incorporarán en tareas posteriores.</p>
+          <p className="text-secondary">Vista provisional. El listado de registros y la sincronización manual se incorporarán en tareas posteriores.</p>
         </section>
       ) : (
         <CaptureTest />
