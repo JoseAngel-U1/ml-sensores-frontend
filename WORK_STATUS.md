@@ -2,9 +2,9 @@
 
 ## Estado general
 
-**Etapa actual:** Fase 3 — Interfaz y captura, en progreso. Tareas 3.1, 3.2 y 3.3 completadas y validadas; fases 1 y 2 completadas.
+**Etapa actual:** Fase 3 — Interfaz y captura, en progreso. Tareas 3.1, 3.2, 3.3 y 3.4 completadas y validadas; siguiente tarea: 3.5, pendiente de iniciar. Fases 1 y 2 completadas.
 
-**Estado de la tarea:** 3.3 — Tema visual claro completado y validado por el usuario, quien confirmó haber realizado el commit de la implementación. La navegación de 3.2 conserva su validación en navegador y Android. Siguiente tarea: 3.4 — Componentes de captura, pendiente de iniciar.
+**Estado de la tarea:** 3.4 — Componentes reutilizables de captura completados y validados por el usuario en navegador y Android. La tarea 3.5 — Cuenta regresiva de preparación de 3 segundos queda como siguiente tarea pendiente de iniciar.
 
 ## Trabajo completado
 
@@ -25,6 +25,7 @@
 - Tarea 3.1 completada: lógica de captura separada de `App.tsx` en el hook reutilizable `src/hooks/useSensorCapture.ts`, con funcionamiento validado por el usuario.
 - Tarea 3.2 completada: navegación entre las cuatro rutas y pruebas existentes validadas por el usuario tanto en navegador como en Android.
 - Tarea 3.3 completada: tema visual claro validado por el usuario; commit de la implementación realizado por el usuario según su confirmación.
+- Tarea 3.4 completada: componentes reutilizables de captura validados por el usuario en navegador y Android, con reloj circular aprobado, selector de actividad mediante botones, captura funcional en ambos módulos y pruebas de SQLite conservadas.
 
 ## Verificación de la migración (2026-11-04)
 
@@ -77,8 +78,8 @@
 ### Estado real de Fase 3
 
 - Arquitectura y tareas verificables documentadas; hook de la tarea 3.1 validado. Creadas las dos páginas provisionales y estructura compartida de navegación; el diseño definitivo sigue pendiente.
-- La captura permanece en `src/hooks/useSensorCapture.ts`. La interfaz de prueba se trasladó a `src/components/CaptureTest.tsx`, que consume el hook e incluye `DatabaseTest`; está accesible en Captura de Entrenamiento.
-- `App.tsx` declara rutas y `main.tsx` configura `BrowserRouter`. La base visual compartida de 3.3 está completada y validada por el usuario; las vistas definitivas siguen pendientes.
+- La captura permanece en `src/hooks/useSensorCapture.ts`. Las vistas Captura de Entrenamiento y Predicción consumen el hook mediante `CaptureClock`, `ActivitySelector` (solo entrenamiento), `CaptureControls` y `CaptureResult`; estos componentes fueron validados por el usuario en navegador y Android. `DatabaseTest` sigue accesible dentro de un bloque desplegable en Captura de Entrenamiento. `CaptureTest.tsx` se conserva sin montarse en las rutas.
+- `App.tsx` declara rutas y `main.tsx` configura `BrowserRouter`. La base visual compartida de 3.3 y los componentes de captura de 3.4 están completados y validados por el usuario; las vistas definitivas siguen pendientes.
 - Dependencias de navegación ya declaradas en `package.json`: `react-router-dom: ^7.18.5` y `@capacitor/app: ^8.1.2`. No se añadieron dependencias para el tema visual.
 - Las muestras completas ya se exponen en `resultado.mediciones`. Antes de integrar el guardado real, quedan por definir las métricas numéricas sin redondear, el tratamiento de muestras incompletas y la política de navegación durante captura.
 - La tarea 3.1 modificó hook, consumo en App y el tipo de resultado; el usuario confirmó que las pruebas funcionan correctamente. El agente no ejecutó comandos ni verificaciones de código.
@@ -265,6 +266,64 @@ npx cap open android
 
 **3.3 queda completada y validada por el usuario.** La Fase 3 general permanece en progreso.
 
-## Siguiente tarea — 3.4: Componentes de captura
+## Tarea 3.4 — Componentes reutilizables de captura completados y validados por el usuario
 
-**Pendiente de iniciar.** Compartir reloj y controles entre Entrenamiento y Predicción, con selector de actividad `quieto`/`caminando`/`corriendo` únicamente en Entrenamiento, según ROADMAP.md. No se ha iniciado su implementación en este cierre documental; las demás tareas conservan su estado.
+### Componentes creados
+
+- `src/components/capture/CaptureClock.tsx`: temporizador circular de solo presentación. Recibe `estado`, `tiempoTranscurrido`, `progreso` y `duracionObjetivo`; dibuja el anillo SVG, el tiempo restante y el estado. No crea temporizadores ni accede a sensores.
+- `src/components/capture/ActivitySelector.tsx`: grupo de radios semántico con las opciones `quieto`, `caminando` y `corriendo` del tipo `Actividad`. Recibe `value`, `onChange` y `disabled`; muestra la selección con estilos y no accede a SQLite ni a sensores.
+- `src/components/capture/CaptureControls.tsx`: botón de inicio y mensaje de estado. Recibe `estado` y `onStart`; deshabilita el botón durante `Capturando...` para evitar inicios duplicados y no contiene lógica de sensores.
+- `src/components/capture/CaptureResult.tsx`: resumen reutilizable de las métricas y del detalle de primera/última medición. Recibe `resultado`; no guarda registros ni consulta SQLite. Se añadió para compartir la presentación del resultado entre ambos módulos.
+
+### Integración y conservación
+
+- `TrainingPage.tsx`: la vista Captura monta una única instancia de `useSensorCapture` en un componente interno y conecta reloj, selector, controles y resultado. El selector inicia en `caminando` y se deshabilita durante la captura. El selector solo existe en Entrenamiento.
+- `PredictionPage.tsx`: la vista Captura usa el mismo hook, reloj, controles y resultado, sin selector de actividad. La captura es real, pero no guarda registros en SQLite.
+- El hook se monta únicamente en la vista Captura activa. Al cambiar a Sincronizar o a otro módulo, el componente se desmonta y el hook retira listener e intervalo; no se duplican suscripciones ni temporizadores.
+- Las vistas Sincronizar permanecen provisionales y sin cambios funcionales.
+- `DatabaseTest` se conserva sin modificar y sigue accesible dentro de un `<details>` en Captura de Entrenamiento. No se modificaron `src/services/database.ts`, su esquema ni sus funciones.
+- Se mantienen la duración de 10 segundos, los seis ejes (`ax`, `ay`, `az`, `gx`, `gy`, `gz`), `tiempo_ms`, las mediciones completas y las métricas del resultado.
+- No se implementaron cuenta regresiva de 3 segundos, guardado automático, tarjetas/listas definitivas, sincronización ni cambios de rutas. No se añadieron dependencias ni se modificaron archivos nativos de Android.
+- `src/components/CaptureTest.tsx` ya no se monta en las páginas; se conserva el archivo como referencia y no se modificó.
+
+### Estilos
+
+- Se reutilizan las variables CSS existentes de `src/index.css` y la paleta clara de `docs/design/DESIGN.md`.
+- Se añadieron estilos para el reloj, el anillo, el selector de actividad, los controles, el resultado y el bloque de prueba SQLite, con foco visible, objetivos táctiles y reducción de movimiento.
+- No se añadió modo oscuro, Tailwind, Material Symbols ni librerías visuales.
+
+### Validación confirmada por el usuario
+
+El usuario confirmó que la tarea 3.4 funciona correctamente en navegador y Android. Aprobó explícitamente el reloj circular que comienza lleno y se vacía durante los 10 segundos, el selector de actividad mediante botones en lugar de un desplegable, la captura funcional en Entrenamiento y Predicción, y la conservación de las pruebas de SQLite. El agente no ejecutó instalaciones, compilación, lint, pruebas ni Git.
+
+Se conservan los comandos siguientes como referencia de regresión para cambios futuros, no como pendientes de esta tarea. Desde `ml-sensores/`:
+
+```bash
+npm run typecheck
+npm run lint
+npm run build
+npm run dev
+```
+
+Para Android, después del build:
+
+```bash
+npx cap sync android
+npx cap open android
+```
+
+- [x] Entrenamiento con reloj, selector de actividad y controles; Predicción con reloj y controles sin selector.
+- [x] Cuenta descendente, anillo que inicia lleno y se vacía, estado visible, botón deshabilitado y ausencia de inicios duplicados.
+- [x] Captura de 10 segundos con seis ejes por medición, `tiempo_ms`, total, válidas, incompletas, frecuencia, primera/última medición y mediciones en memoria.
+- [x] Cambio de vista o módulo durante una captura sin dejar una captura activa al volver.
+- [x] Capturas repetidas sin superposición de resultados ni temporizadores.
+- [x] Selector accesible y bloqueado durante la captura.
+- [x] Prueba de SQLite conservada: inicializar, guardar y recuperar por UUID sin cambios en el servicio ni en el esquema.
+- [x] Tema claro, anchos móviles, foco, áreas seguras y orientación horizontal revisados en navegador y Android.
+- [x] Diferencias respecto a Stitch aceptadas: selector segmentado mediante botones, iconos SVG locales y fuentes alternativas locales.
+
+**3.4 queda completada y validada por el usuario.** La Fase 3 general permanece en progreso.
+
+## Siguiente tarea — 3.5: Cuenta regresiva de preparación de 3 segundos
+
+**Pendiente de iniciar.** Añadir una cuenta regresiva previa de 3 segundos separada de los 10 segundos de captura, definir el comportamiento de navegación durante la preparación/captura y verificar temporizadores, limpieza y ausencia de sesiones superpuestas. No se ha iniciado su implementación; las tareas posteriores conservan su estado.

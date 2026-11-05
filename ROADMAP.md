@@ -30,7 +30,7 @@ Resultado de referencia: 601 mediciones válidas en 10 segundos, con frecuencia 
 
 ## Fase 3 — Interfaz y captura
 
-**Estado: En progreso — tareas 3.1, 3.2 y 3.3 completadas y validadas; siguiente tarea: 3.4, pendiente de iniciar**
+**Estado: En progreso — tareas 3.1, 3.2, 3.3 y 3.4 completadas y validadas; siguiente tarea: 3.5, pendiente de iniciar**
 
 Referencia: [docs/UI_ARCHITECTURE.md](docs/UI_ARCHITECTURE.md). Solo dos páginas principales (`TrainingPage` y `PredictionPage`), cada una con vistas internas Captura y Sincronizar. Rutas aprobadas: `/entrenamiento`, `/entrenamiento/sincronizar`, `/prediccion` y `/prediccion/sincronizar`. `App.tsx` definirá las rutas y redirigirá las desconocidas a `/entrenamiento`; `AppLayout` compartirá encabezado, navegación inferior y contenido activo.
 
@@ -38,8 +38,8 @@ Referencia: [docs/UI_ARCHITECTURE.md](docs/UI_ARCHITECTURE.md). Solo dos página
 - [x] **3.1 — Extraer el hook reutilizable de sensores.** Completada y validada por el usuario. La lógica está separada de `App.tsx` en `useSensorCapture`; la captura de 10 segundos sigue funcionando, con frecuencia medida, validación, mediciones completas en el resultado y limpieza de recursos.
 - [x] **3.2 — Implementar navegación con React Router.** Completada y validada por el usuario en navegador y Android: dos páginas, cuatro rutas, estructura compartida y navegación funcional, conservando las pruebas de sensores y SQLite.
 - [x] **3.3 — Aplicar el tema claro compartido.** Completada y validada por el usuario, quien confirmó haber realizado el commit de la implementación. Base visual con tokens de Functional Palette, tipografía con alternativas locales, espaciados, superficies, botones y estructura compartida según [docs/design/DESIGN.md](docs/design/DESIGN.md) y [docs/design/references/](docs/design/references/). Las fuentes oficiales no están empaquetadas; la diferencia se conserva documentada en WORK_STATUS.md.
-- [ ] **3.4 — Compartir componentes de captura.** Reloj y controles para ambos módulos; selector `quieto`/`caminando`/`corriendo` solo en entrenamiento. Verificar que predicción no solicite actividad.
-- [ ] **3.5 — Incorporar cuenta regresiva de 3 segundos.** Separarla de los 10 segundos de captura; definir navegación durante captura y verificar temporizadores, limpieza y ausencia de sesiones superpuestas.
+- [x] **3.4 — Compartir componentes de captura.** Completada y validada por el usuario en navegador y Android. Reloj y controles compartidos entre ambos módulos, con selector de actividad solo en entrenamiento y captura funcional en Predicción sin guardado. El usuario aprobó el reloj circular que inicia lleno y se vacía durante los 10 segundos, el selector mediante botones en lugar de desplegable y la conservación de las pruebas de SQLite.
+- [ ] **3.5 — Incorporar cuenta regresiva de 3 segundos.** Siguiente tarea pendiente de iniciar. Separarla de los 10 segundos de captura; definir navegación durante captura y verificar temporizadores, limpieza y ausencia de sesiones superpuestas.
 - [ ] **3.6 — Integrar guardado de entrenamiento.** Resolver exposición de muestras completas/métricas numéricas y tratamiento de muestras incompletas; construir `Registro` con actividad obligatoria, UUID, fecha ISO y estado pendiente. Verificar guardado y recuperación mediante SQLite existente, incluyendo errores.
 - [ ] **3.7 — Integrar guardado de predicción.** Reutilizar hook, controles y servicio; guardar `tipo: prediccion` y `actividad: null`. Verificar recuperación y persistencia sin conexión.
 - [ ] **3.8 — Implementar vistas internas Sincronizar.** Reutilizar tarjetas/listados, consultar registros locales y filtrar por tipo; verificar estados pendiente/sincronizado, carga, vacío y error. El envío manual real queda en Fase 4; no simularlo ni marcar éxito remoto.
