@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { EstadoCaptura, MedicionSensor, ResultadoCaptura } from "../types/sensores";
+import type { EstadoCaptura, MedicionCompleta, MedicionSensor, ResultadoCaptura } from "../types/sensores";
 
 export const DURACION_CAPTURA_SEGUNDOS = 10;
 export const DURACION_PREPARACION_SEGUNDOS = 3;
@@ -8,11 +8,19 @@ const DURACION_MS = DURACION_CAPTURA_SEGUNDOS * 1000;
 const DURACION_PREPARACION_MS = DURACION_PREPARACION_SEGUNDOS * 1000;
 const INTERVALO_MS = 100;
 
+function esMedicionCompleta(medicion: MedicionSensor): medicion is MedicionCompleta {
+  return Number.isFinite(medicion.tiempo_ms)
+    && medicion.tiempo_ms >= 0
+    && [medicion.ax, medicion.ay, medicion.az, medicion.gx, medicion.gy, medicion.gz].every(
+      (valor) => typeof valor === "number" && Number.isFinite(valor)
+    );
+}
+
 /**
  *! Controla una preparación de 3 segundos y una captura posterior de 10 segundos
  ** por instancia del hook. El consumidor debe montar una sola instancia activa.
  * @returns //? Estado, segundos de preparación, segundos de captura, resultado e iniciar().
- ** Las mediciones completas están en resultado.mediciones; no se guardan en SQLite.
+ ** Las mediciones completas están en resultado.medicionesCompletas; el hook no persiste.
  */
 export function useSensorCapture() {
   const [estado, setEstado] = useState<EstadoCaptura>("Listo para iniciar");
@@ -68,15 +76,13 @@ export function useSensorCapture() {
 
     const mediciones = [...medicionesRef.current];
     const total = mediciones.length;
-    const duracionReal = (performance.now() - inicioRef.current) / 1000;
+    const duracionMs = performance.now() - inicioRef.current;
     limpiarRecursos();
 
-    const validas = mediciones.filter((m) =>
-      [m.ax, m.ay, m.az, m.gx, m.gy, m.gz].every(
-        (valor) => typeof valor === "number" && Number.isFinite(valor)
-      )
-    ).length;
-    const frecuencia = total / duracionReal;
+    const medicionesCompletas = mediciones.filter(esMedicionCompleta);
+    const validas = medicionesCompletas.length;
+    const duracionReal = duracionMs / 1000;
+    const frecuencia = duracionReal > 0 ? total / duracionReal : 0;
 
     setPreparacion(0);
     setSegundos(DURACION_CAPTURA_SEGUNDOS);
@@ -84,11 +90,14 @@ export function useSensorCapture() {
       total,
       validas,
       invalidas: total - validas,
+      frecuencia_hz: frecuencia,
+      duracion_ms: duracionMs,
       frecuencia: frecuencia.toFixed(2),
       duracion: duracionReal.toFixed(2),
       primera: mediciones[0] ?? null,
       ultima: mediciones[total - 1] ?? null,
       mediciones,
+      medicionesCompletas,
     });
     setEstado("Captura finalizada");
     console.log("Mediciones capturadas:", mediciones);

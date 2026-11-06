@@ -14,10 +14,22 @@ export interface MedicionSensor {
   gz: number | null;
 }
 
+export interface MedicionCompleta {
+  tiempo_ms: number;
+  ax: number;
+  ay: number;
+  az: number;
+  gx: number;
+  gy: number;
+  gz: number;
+}
+
 export interface ResultadoCaptura {
   total: number;
   validas: number;
   invalidas: number;
+  frecuencia_hz: number;
+  duracion_ms: number;
   // Valores formateados con toFixed(2) para su visualización.
   frecuencia: string;
   duracion: string;
@@ -26,4 +38,5 @@ export interface ResultadoCaptura {
   // Instantánea completa de la sesión finalizada, incluidas las muestras incompletas.
   // Se conserva para un guardado posterior; el hook no realiza persistencia.
   mediciones: MedicionSensor[];
+  medicionesCompletas: MedicionCompleta[];
 }

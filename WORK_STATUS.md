@@ -2,9 +2,9 @@
 
 ## Estado general
 
-**Etapa actual:** Fase 3 — Interfaz y captura, en progreso. Tareas 3.1, 3.2, 3.3, 3.4 y 3.5 completadas y validadas; siguiente tarea: 3.6 — Guardado de capturas de Entrenamiento en SQLite, pendiente de iniciar. Fases 1 y 2 completadas.
+**Etapa actual:** Fase 3 — Interfaz y captura, en progreso. Tareas 3.1, 3.2, 3.3, 3.4, 3.5 y 3.6 completadas y validadas; siguiente tarea: 3.7 — Guardado de capturas de Predicción en SQLite, pendiente de iniciar. Fases 1 y 2 completadas.
 
-**Estado de la tarea:** 3.5 — Cuenta regresiva de preparación de 3 segundos completada y validada por el usuario. La preparación funciona antes de la captura real de 10 segundos, sin mediciones durante la preparación; cancelación, limpieza y reutilización verificadas. La tarea 3.6 — Guardado de capturas de Entrenamiento en SQLite queda como siguiente tarea pendiente de iniciar.
+**Estado de la tarea:** 3.6 — Guardado de capturas de Entrenamiento en SQLite completada y validada por el usuario en Android. La preparación y captura de 10 segundos, el guardado automático, el UUID por registro, la recuperación de aproximadamente 600 mediciones y la persistencia tras reiniciar funcionan correctamente. Predicción no presentó regresiones. La tarea 3.7 — Guardado de capturas de Predicción en SQLite queda como siguiente tarea pendiente de iniciar.
 
 ## Trabajo completado
 
@@ -27,6 +27,7 @@
 - Tarea 3.3 completada: tema visual claro validado por el usuario; commit de la implementación realizado por el usuario según su confirmación.
 - Tarea 3.4 completada: componentes reutilizables de captura validados por el usuario en navegador y Android, con reloj circular aprobado, selector de actividad mediante botones, captura funcional en ambos módulos y pruebas de SQLite conservadas.
 - Tarea 3.5 completada: preparación de 3 segundos antes de la captura real de 10 segundos en Entrenamiento y Predicción, validada por el usuario. Durante la preparación no se toman mediciones; la cancelación, limpieza y reutilización funcionan correctamente.
+- Tarea 3.6 completada: guardado automático de capturas de Entrenamiento en SQLite validado por el usuario en Android, con UUID por registro, recuperación de aproximadamente 600 mediciones y persistencia tras reiniciar. Predicción no presentó regresiones.
 
 ## Verificación de la migración (2026-11-04)
 
@@ -80,11 +81,11 @@
 
 - Arquitectura y tareas verificables documentadas; hook de la tarea 3.1 validado. Creadas las dos páginas provisionales y estructura compartida de navegación; el diseño definitivo sigue pendiente.
 - La captura permanece en `src/hooks/useSensorCapture.ts`. Las vistas Captura de Entrenamiento y Predicción consumen el hook mediante `CaptureClock`, `ActivitySelector` (solo entrenamiento), `CaptureControls` y `CaptureResult`; estos componentes fueron validados por el usuario en navegador y Android. `DatabaseTest` sigue accesible dentro de un bloque desplegable en Captura de Entrenamiento. `CaptureTest.tsx` se conserva sin montarse en las rutas.
-- `App.tsx` declara rutas y `main.tsx` configura `BrowserRouter`. La base visual compartida de 3.3 y los componentes de captura de 3.4 están completados y validados por el usuario; las vistas definitivas siguen pendientes. La tarea 3.5 añade una preparación de 3 segundos y está completada y validada por el usuario.
+- `App.tsx` declara rutas y `main.tsx` configura `BrowserRouter`. La base visual compartida de 3.3 y los componentes de captura de 3.4 están completados y validados por el usuario; las vistas definitivas siguen pendientes. Las tareas 3.5 y 3.6 están completadas y validadas por el usuario.
 - Dependencias de navegación ya declaradas en `package.json`: `react-router-dom: ^7.18.5` y `@capacitor/app: ^8.1.2`. No se añadieron dependencias para el tema visual.
-- Las muestras completas ya se exponen en `resultado.mediciones`. Antes de integrar el guardado real, quedan por definir las métricas numéricas sin redondear, el tratamiento de muestras incompletas y la política de navegación durante captura.
+- La tarea 3.6 expone métricas numéricas y muestras completas, rechaza capturas incompletas, guarda automáticamente con UUID, fecha y actividad fijados, y muestra estados de guardado con reintento. El guardado de capturas de Predicción queda para la tarea 3.7.
 - La tarea 3.1 modificó hook, consumo en App y el tipo de resultado; el usuario confirmó que las pruebas funcionan correctamente. El agente no ejecutó comandos ni verificaciones de código.
-- Sistema de Stitch y cuatro capturas disponibles y referenciados. Functional Palette tiene prioridad definitiva; se corrigieron en el YAML los tokens `background`, `surface`, `primary`, `on-background` y `on-surface`. Los roles adicionales sin equivalencia confirmada se conservan y se interpretarán solo si se utilizan, según la sección 6 de `docs/UI_ARCHITECTURE.md`. La base visual compartida ya está implementada y validada en 3.3; las tareas posteriores siguen pendientes.
+- Sistema de Stitch y cuatro capturas disponibles y referenciados. Functional Palette tiene prioridad definitiva; se corrigieron en el YAML los tokens `background`, `surface`, `primary`, `on-background` y `on-surface`. Los roles adicionales sin equivalencia confirmada se conservan y se interpretarán solo si se utilizan, según la sección 6 de `docs/UI_ARCHITECTURE.md`. La base visual compartida ya está implementada y validada en 3.3; las tareas 3.4, 3.5 y 3.6 también están completadas y validadas, mientras que 3.7–3.9 siguen pendientes.
 
 ## Validación completada
 
@@ -374,6 +375,24 @@ npx cap open android
 
 **3.5 queda completada y validada por el usuario.** La Fase 3 general permanece en progreso.
 
-## Siguiente tarea — 3.6: Guardado de capturas de Entrenamiento en SQLite
+## Tarea 3.6 — Guardado de capturas de Entrenamiento en SQLite: completada y validada por el usuario
 
-**Pendiente de iniciar.** Integrar el guardado de las capturas de Entrenamiento en SQLite reutilizando el servicio existente. Resolver la exposición de muestras completas y métricas numéricas, el tratamiento de muestras incompletas y la construcción de `Registro` con actividad obligatoria, UUID, fecha ISO y estado pendiente. Verificar guardado y recuperación, incluidos los errores, sin modificar el esquema aprobado ni las demás tareas.
+### Cambios realizados
+
+- `src/types/sensores.ts`: se añadió `MedicionCompleta` y `ResultadoCaptura` expone `duracion_ms`, `frecuencia_hz` y `medicionesCompletas`, además de las métricas formateadas para presentación.
+- `src/types/records.ts`: `Medicion` reutiliza la variante completa y se añadió `EstadoGuardadoCaptura`.
+- `src/hooks/useSensorCapture.ts`: calcula las métricas numéricas sin redondear y separa las mediciones completas de las que contienen lecturas nulas o no finitas.
+- `src/pages/TrainingPage.tsx`: guarda automáticamente al finalizar una captura de Entrenamiento con UUID, fecha y actividad fijados una sola vez. Rechaza capturas incompletas o sin métricas válidas, detecta duplicados mediante `getRecordById` y permite reintentar con el mismo UUID.
+- `src/components/capture/CaptureSaveStatus.tsx`: nuevo estado visible de guardado, con mensajes de éxito, rechazo por datos incompletos y error con reintento.
+- `src/components/capture/CaptureControls.tsx`, `src/components/capture/CaptureResult.tsx` y `src/index.css`: ajustes de textos, bloqueo durante el guardado y estilos del estado.
+- No se modificaron el esquema SQLite, `src/services/database.ts`, el módulo Predicción, las dependencias ni archivos nativos de Android.
+
+### Validación confirmada por el usuario
+
+El usuario validó la tarea 3.6 en un dispositivo Android real: preparación de 3 segundos y captura de 10 segundos correctas, guardado automático en SQLite correcto, UUID por registro correcto, persistencia tras reiniciar correcta y recuperación de un registro con aproximadamente 600 mediciones correcta. El módulo Predicción no presentó regresiones. TypeScript y build fueron correctos; el error de lint `no-useless-assignment` fue corregido antes de la validación final. El agente no ejecutó comandos, pruebas ni Git.
+
+**3.6 queda completada y validada por el usuario.** La Fase 3 general permanece en progreso.
+
+## Siguiente tarea — 3.7: Guardado de capturas de Predicción en SQLite
+
+**Pendiente de iniciar.** Integrar el guardado de las capturas de Predicción reutilizando el hook, los controles y el servicio existentes; guardar `tipo: prediccion` y `actividad: null`. Verificar recuperación y persistencia sin conexión, sin modificar el esquema aprobado ni el flujo ya validado de Entrenamiento.

@@ -1,15 +1,15 @@
-import type { MedicionSensor } from "./sensores";
+import type { MedicionCompleta } from "./sensores";
 
 export type Actividad = "quieto" | "caminando" | "corriendo";
 export type TipoRegistro = "entrenamiento" | "prediccion";
 export type EstadoSync = "pendiente" | "sincronizado";
+export type EstadoGuardadoCaptura = "inactivo" | "guardando" | "guardado" | "incompleta" | "error";
 
 /**
- ** Reutiliza el formato de captura sin duplicar la definición de los seis ejes.
- ** Aunque MedicionSensor admite lecturas nulas, el servicio SQLite exige valores
- ** numéricos finitos en todos los ejes antes de persistir las mediciones.
+ ** La persistencia exige los seis ejes numéricos finitos, por lo que reutiliza
+ ** la variante completa de la medición de sensores en lugar de la que admite null.
  */
-export type Medicion = MedicionSensor;
+export type Medicion = MedicionCompleta;
 
 /**
  ** Representación de una sesión en la aplicación. En SQLite, mediciones se guarda

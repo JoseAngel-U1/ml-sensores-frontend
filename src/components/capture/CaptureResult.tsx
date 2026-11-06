@@ -36,7 +36,6 @@ export default function CaptureResult({ resultado }: CaptureResultProps) {
       </dl>
       <p className="text-secondary">
         Se conservan {resultado.mediciones.length} mediciones completas e incompletas en memoria.
-        Todavía no se guardan en SQLite.
       </p>
       <details className="capture-result__details">
         <summary>Primera y última medición</summary>

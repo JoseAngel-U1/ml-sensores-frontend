@@ -736,6 +736,46 @@ pre {
   width: 100%;
 }
 
+.capture-save-status {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  width: 100%;
+  margin: 0;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-background);
+  color: var(--color-text);
+}
+
+.capture-save-status p {
+  margin: 0;
+}
+
+.capture-save-status--success {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.capture-save-status--warning {
+  border-color: var(--color-error-border);
+  background: var(--color-error-background);
+  color: var(--color-error);
+}
+
+.capture-save-status--error {
+  border-color: var(--color-error-border);
+  background: var(--color-error-background);
+  color: var(--color-error);
+}
+
+.capture-save-status button {
+  align-self: flex-start;
+}
+
 .capture-result__metrics {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

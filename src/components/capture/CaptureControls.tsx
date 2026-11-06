@@ -4,6 +4,7 @@ import type { EstadoCaptura } from "../../types/sensores";
 interface CaptureControlsProps {
   estado: EstadoCaptura;
   onStart: () => void;
+  disabled?: boolean;
 }
 
 const ETIQUETAS: Record<EstadoCaptura, string> = {
@@ -17,16 +18,16 @@ const AYUDAS: Record<EstadoCaptura, string> = {
   "Listo para iniciar": "La preparación dura 3 segundos y la captura 10 segundos.",
   "Preparando...": "Prepárate: la captura comenzará automáticamente al terminar la cuenta.",
   "Capturando...": "Captura en curso. Mantén esta vista abierta hasta finalizar.",
-  "Captura finalizada": "Captura completada. Las mediciones permanecen en memoria.",
+  "Captura finalizada": "Captura completada. Revisa el resultado.",
 };
 
 /**
  *! Controles visuales de captura. La sesión la controla el hook del consumidor.
  ** El botón se deshabilita durante preparación y captura para evitar inicios duplicados.
  */
-export default function CaptureControls({ estado, onStart }: CaptureControlsProps) {
+export default function CaptureControls({ estado, onStart, disabled = false }: CaptureControlsProps) {
   const ayudaId = useId();
-  const bloqueado = estado === "Preparando..." || estado === "Capturando...";
+  const bloqueado = disabled || estado === "Preparando..." || estado === "Capturando...";
 
   return (
     <div className="capture-controls">
