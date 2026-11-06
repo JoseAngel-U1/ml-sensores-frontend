@@ -6,6 +6,7 @@ import CaptureClock from "../components/capture/CaptureClock";
 import CaptureControls from "../components/capture/CaptureControls";
 import CaptureResult from "../components/capture/CaptureResult";
 import CaptureSaveStatus from "../components/capture/CaptureSaveStatus";
+import RecordsSyncView from "../components/records/RecordsSyncView";
 import {
   DURACION_CAPTURA_SEGUNDOS,
   DURACION_PREPARACION_SEGUNDOS,
@@ -86,14 +87,10 @@ export default function TrainingPage() {
       </nav>
 
       {sincronizar ? (
-        <section className="surface-card" aria-labelledby="training-sync-title">
-          <h2 id="training-sync-title">Sincronizar entrenamiento</h2>
-          <p className="text-secondary">Vista provisional. El listado de registros y la sincronización manual se incorporarán en tareas posteriores.</p>
-        </section>
+        <RecordsSyncView tipo="entrenamiento" />
       ) : (
         <TrainingCapture />
       )}
-      
     </>
   );
 }

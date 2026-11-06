@@ -1,7 +1,7 @@
 import { Capacitor } from "@capacitor/core";
 import { CapacitorSQLite, SQLiteConnection } from "@capacitor-community/sqlite";
 import type { SQLiteDBConnection } from "@capacitor-community/sqlite";
-import type { Medicion, Registro } from "../types/records";
+import type { Medicion, Registro, RegistroResumen, TipoRegistro } from "../types/records";
 
 // El gestor del plugin se comparte entre los consumidores de este módulo.
 // La base reside en el almacenamiento privado de Android, no en el estado de React.
@@ -128,6 +128,12 @@ function isFiniteNumber(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value);
 }
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function isUuid(value: unknown): value is string {
+  return typeof value === "string" && UUID_PATTERN.test(value);
+}
+
 // El tipo de sensores admite lecturas incompletas durante la captura, pero la
 // persistencia exige las seis lecturas finitas y un tiempo relativo no negativo.
 function isMeasurement(value: unknown): value is Medicion {
@@ -136,15 +142,10 @@ function isMeasurement(value: unknown): value is Medicion {
     && [value.ax, value.ay, value.az, value.gx, value.gy, value.gz].every(isFiniteNumber);
 }
 
-// Valida tanto entradas de escritura como registros leídos. La aserción de tipo
-// solo se cumple tras comprobar los datos; cualquier incumplimiento lanza un error.
-function validateRecord(value: unknown): asserts value is Registro {
-  if (!isObject(value)) throw new Error("El registro no es un objeto válido.");
-  if (typeof value.id !== "string" || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value.id)) {
+function validateRecordMetadata(value: Record<string, unknown>): void {
+  if (!isUuid(value.id)) {
     throw new Error("El identificador debe ser un UUID.");
   }
-  // Mantiene la misma relación tipo/actividad que el CHECK de la tabla:
-  // una etiqueta conocida para entrenamiento y ninguna etiqueta para predicción.
   const validActivity = value.actividad === "quieto" || value.actividad === "caminando" || value.actividad === "corriendo";
   if (!((value.tipo === "entrenamiento" && validActivity)
     || (value.tipo === "prediccion" && value.actividad === null))) {
@@ -160,15 +161,31 @@ function validateRecord(value: unknown): asserts value is Registro {
     || !isFiniteNumber(value.frecuencia_hz) || value.frecuencia_hz <= 0) {
     throw new Error("La duración y frecuencia deben ser números finitos positivos.");
   }
+  // La lectura admite ambos estados; saveRecord exige pendiente para altas nuevas.
+  if (value.estado_sync !== "pendiente" && value.estado_sync !== "sincronizado") {
+    throw new Error("Estado de sincronización inválido.");
+  }
+}
+
+// Valida tanto entradas de escritura como registros leídos. La aserción de tipo
+// solo se cumple tras comprobar los datos; cualquier incumplimiento lanza un error.
+function validateRecord(value: unknown): asserts value is Registro {
+  if (!isObject(value)) throw new Error("El registro no es un objeto válido.");
+  validateRecordMetadata(value);
   // Array.from convierte los huecos de un arreglo disperso en undefined para
   // que también sean rechazados, en lugar de ser omitidos por every.
   if (!Array.isArray(value.mediciones) || value.mediciones.length === 0
     || !Array.from(value.mediciones).every(isMeasurement)) {
     throw new Error("Se requiere al menos una medición con tiempo válido y seis lecturas numéricas finitas.");
   }
-  // La lectura admite ambos estados; saveRecord exige pendiente para altas nuevas.
-  if (value.estado_sync !== "pendiente" && value.estado_sync !== "sincronizado") {
-    throw new Error("Estado de sincronización inválido.");
+}
+
+function validateRecordSummary(value: unknown): asserts value is RegistroResumen {
+  if (!isObject(value)) throw new Error("El resumen del registro no es un objeto válido.");
+  validateRecordMetadata(value);
+  if (!isFiniteNumber(value.totalMediciones) || !Number.isInteger(value.totalMediciones)
+    || value.totalMediciones <= 0) {
+    throw new Error("El resumen debe indicar una cantidad positiva de mediciones.");
   }
 }
 
@@ -183,6 +200,26 @@ function decodeRecord(row: unknown): Registro {
   const record: unknown = { ...row, mediciones };
   validateRecord(record);
   return record;
+}
+
+function decodeRecordSummary(row: unknown): RegistroResumen {
+  if (!isObject(row)) throw new Error("Fila SQLite inválida: se esperaba un objeto.");
+  const totalMediciones = row.total_mediciones;
+  if (!isFiniteNumber(totalMediciones)) {
+    throw new Error("Fila SQLite inválida: total_mediciones debe ser numérico.");
+  }
+  const summary: unknown = {
+    id: row.id,
+    tipo: row.tipo,
+    actividad: row.actividad,
+    fecha: row.fecha,
+    duracion_ms: row.duracion_ms,
+    frecuencia_hz: row.frecuencia_hz,
+    estado_sync: row.estado_sync,
+    totalMediciones,
+  };
+  validateRecordSummary(summary);
+  return summary;
 }
 
 /**
@@ -229,6 +266,19 @@ function queryRecords(statement: string, values: string[] = []): Promise<Registr
   });
 }
 
+function queryRecordSummaries(tipo: TipoRegistro): Promise<RegistroResumen[]> {
+  return withDatabase("No se pudieron consultar los resúmenes de registros", async (db) => {
+    const result = await db.query(`SELECT id, tipo, actividad, fecha, duracion_ms,
+      frecuencia_hz, estado_sync, json_array_length(mediciones) AS total_mediciones
+      FROM registros
+      WHERE tipo = ?
+      ORDER BY fecha DESC, id ASC`, [tipo]);
+    const rows: unknown = result.values;
+    if (!Array.isArray(rows)) throw new Error("SQLite no devolvió una lista de filas.");
+    return rows.map((row: unknown) => decodeRecordSummary(row));
+  });
+}
+
 /**
  * Consulta todos los registros locales con sus mediciones deserializadas.
  * @returns Registros por fecha descendente e ID ascendente, o una lista vacía.
@@ -236,6 +286,10 @@ function queryRecords(statement: string, values: string[] = []): Promise<Registr
  */
 export function getRecords(): Promise<Registro[]> {
   return queryRecords("SELECT * FROM registros ORDER BY fecha DESC, id ASC");
+}
+
+export function getRecordSummaries(tipo: TipoRegistro): Promise<RegistroResumen[]> {
+  return queryRecordSummaries(tipo);
 }
 
 /**

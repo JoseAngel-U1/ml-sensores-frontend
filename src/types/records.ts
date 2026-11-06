@@ -34,3 +34,7 @@ export interface Registro {
   //* Seguimiento local de sincronización, independiente de los valores de sensores.
   estado_sync: EstadoSync;
 }
+
+export type RegistroResumen = Omit<Registro, "mediciones"> & {
+  totalMediciones: number;
+};

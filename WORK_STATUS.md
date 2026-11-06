@@ -2,9 +2,9 @@
 
 ## Estado general
 
-**Etapa actual:** Fase 3 — Interfaz y captura, en progreso. Tareas 3.1, 3.2, 3.3, 3.4, 3.5, 3.6 y 3.7 completadas y validadas; siguiente tarea: 3.8 — Listado y gestión de registros locales para sincronización, pendiente de iniciar. Fases 1 y 2 completadas.
+**Etapa actual:** Fase 3 — Interfaz y captura, en progreso. Tareas 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7 y 3.8 completadas y validadas; siguiente tarea: 3.9 — Validación integral en Android, pendiente de iniciar. Fases 1 y 2 completadas.
 
-**Estado de la tarea:** 3.7 — Guardado de capturas de Predicción en SQLite completada y validada por el usuario en Android. La preparación de 3 segundos, la captura de 10 segundos, el guardado automático, el UUID por registro, el tipo `prediccion`, la actividad `null`, el estado pendiente, la persistencia y la recuperación de aproximadamente 600 mediciones funcionan correctamente. La regresión de Entrenamiento fue superada tras integrar el hook compartido. La tarea 3.8 — Listado y gestión de registros locales para sincronización queda como siguiente tarea pendiente de iniciar.
+**Estado de la tarea:** 3.8 — Listado y gestión de registros locales para sincronización completada y validada por el usuario en Android. Las vistas Sincronizar de Entrenamiento y Predicción consultan resúmenes filtrados por tipo mediante `getRecordSummaries`, muestran tarjetas con UUID, fecha, duración, frecuencia, cantidad de mediciones, actividad y estado, y cubren carga, vacío, error y reintento. Se confirmaron la compatibilidad de SQLite con `json_array_length()`, la consulta automática al entrar, el filtrado, la persistencia, la navegación, la ausencia de cambios en `estado_sync` y la regresión de captura y guardado. Se eliminó el botón «Actualizar listado» conservando «Reintentar». `npm run typecheck`, `npm run lint` y `npm run build` fueron aprobados. La tarea 3.9 — Validación integral en Android queda como siguiente tarea pendiente de iniciar.
 
 ## Trabajo completado
 
@@ -29,6 +29,7 @@
 - Tarea 3.5 completada: preparación de 3 segundos antes de la captura real de 10 segundos en Entrenamiento y Predicción, validada por el usuario. Durante la preparación no se toman mediciones; la cancelación, limpieza y reutilización funcionan correctamente.
 - Tarea 3.6 completada: guardado automático de capturas de Entrenamiento en SQLite validado por el usuario en Android, con UUID por registro, recuperación de aproximadamente 600 mediciones y persistencia tras reiniciar. Predicción no presentó regresiones.
 - Tarea 3.7 completada: guardado automático de capturas de Predicción en SQLite validado por el usuario en Android, con hook compartido `useCaptureSave`, UUID por registro, tipo `prediccion`, actividad `null`, estado pendiente, persistencia y recuperación de aproximadamente 600 mediciones. La regresión de Entrenamiento fue superada.
+- Tarea 3.8 completada: listado local por tipo en las vistas Sincronizar validado por el usuario en Android, con resúmenes SQLite mediante `getRecordSummaries`, tarjetas, consulta automática, estados de carga/vacío/error y reintento. Se confirmó `json_array_length()`, la persistencia, la navegación y la ausencia de cambios en `estado_sync` o sincronización remota; se eliminó el botón «Actualizar listado» conservando «Reintentar».
 
 ## Verificación de la migración (2026-11-04)
 
@@ -82,11 +83,11 @@
 
 - Arquitectura y tareas verificables documentadas; hook de la tarea 3.1 validado. Creadas las dos páginas provisionales y estructura compartida de navegación; el diseño definitivo sigue pendiente.
 - La captura permanece en `src/hooks/useSensorCapture.ts`. Las vistas Captura de Entrenamiento y Predicción consumen el hook mediante `CaptureClock`, `ActivitySelector` (solo entrenamiento), `CaptureControls` y `CaptureResult`; estos componentes fueron validados por el usuario en navegador y Android. `DatabaseTest` sigue accesible dentro de un bloque desplegable en Captura de Entrenamiento. `CaptureTest.tsx` se conserva sin montarse en las rutas.
-- `App.tsx` declara rutas y `main.tsx` configura `BrowserRouter`. La base visual compartida de 3.3 y los componentes de captura de 3.4 están completados y validados por el usuario; las vistas definitivas siguen pendientes. Las tareas 3.5, 3.6 y 3.7 están completadas y validadas por el usuario.
+- `App.tsx` declara rutas y `main.tsx` configura `BrowserRouter`. La base visual compartida de 3.3 y los componentes de captura de 3.4 están completados y validados por el usuario. Las tareas 3.5, 3.6, 3.7 y 3.8 están completadas y validadas por el usuario; la 3.8 incluye las vistas Sincronizar y su validación Android.
 - Dependencias de navegación ya declaradas en `package.json`: `react-router-dom: ^7.18.5` y `@capacitor/app: ^8.1.2`. No se añadieron dependencias para el tema visual.
-- La tarea 3.6 expone métricas numéricas y muestras completas, rechaza capturas incompletas, guarda automáticamente con UUID, fecha y actividad fijados, y muestra estados de guardado con reintento. La tarea 3.7 extrajo esa orquestación a `useCaptureSave`, la reutiliza en Entrenamiento y Predicción y guarda las capturas de Predicción con `tipo: prediccion` y `actividad: null`. El listado y la gestión de registros locales para sincronización quedan para la tarea 3.8.
+- La tarea 3.6 expone métricas numéricas y muestras completas, rechaza capturas incompletas, guarda automáticamente con UUID, fecha y actividad fijados, y muestra estados de guardado con reintento. La tarea 3.7 extrajo esa orquestación a `useCaptureSave`, la reutiliza en Entrenamiento y Predicción y guarda las capturas de Predicción con `tipo: prediccion` y `actividad: null`. La tarea 3.8 implementa el listado local por tipo con resúmenes SQLite, tarjetas, estados, consulta automática y reintento; está completada y validada en Android.
 - La tarea 3.1 modificó hook, consumo en App y el tipo de resultado; el usuario confirmó que las pruebas funcionan correctamente. El agente no ejecutó comandos ni verificaciones de código.
-- Sistema de Stitch y cuatro capturas disponibles y referenciados. Functional Palette tiene prioridad definitiva; se corrigieron en el YAML los tokens `background`, `surface`, `primary`, `on-background` y `on-surface`. Los roles adicionales sin equivalencia confirmada se conservan y se interpretarán solo si se utilizan, según la sección 6 de `docs/UI_ARCHITECTURE.md`. La base visual compartida ya está implementada y validada en 3.3; las tareas 3.4, 3.5, 3.6 y 3.7 también están completadas y validadas, mientras que 3.8–3.9 siguen pendientes.
+- Sistema de Stitch y cuatro capturas disponibles y referenciados. Functional Palette tiene prioridad definitiva; se corrigieron en el YAML los tokens `background`, `surface`, `primary`, `on-background` y `on-surface`. Los roles adicionales sin equivalencia confirmada se conservan y se interpretarán solo si se utilizan, según la sección 6 de `docs/UI_ARCHITECTURE.md`. La base visual compartida ya está implementada y validada en 3.3; las tareas 3.4, 3.5, 3.6, 3.7 y 3.8 también están completadas y validadas. La tarea 3.9 — Validación integral en Android queda pendiente de iniciar.
 
 ## Validación completada
 
@@ -409,6 +410,42 @@ El usuario validó la tarea 3.7 en un dispositivo Android real: preparación de 
 
 **3.7 queda completada y validada por el usuario.** La Fase 3 general permanece en progreso.
 
-## Siguiente tarea — 3.8: Listado y gestión de registros locales para sincronización
+## Tarea 3.8 — Listado y gestión de registros locales para sincronización: completada y validada por el usuario
 
-**Pendiente de iniciar.** Implementar las vistas internas Sincronizar reutilizando tarjetas, listados, el servicio SQLite y los tipos existentes. Consultar registros locales y filtrar por tipo; verificar estados pendiente/sincronizado, carga, vacío y error. El envío manual real queda en Fase 4; no simularlo ni marcar éxito remoto.
+### Cambios realizados
+
+- `src/types/records.ts`: nuevo `RegistroResumen`, derivado de `Registro` sin `mediciones` y con `totalMediciones`.
+- `src/services/database.ts`: nueva consulta `getRecordSummaries(tipo)` con `json_array_length(mediciones)`, filtro por tipo y orden por fecha descendente e ID ascendente. La validación comparte los campos comunes con `Registro`.
+- `src/hooks/useRecordSummaries.ts`: consulta automática al entrar a la vista, estados de carga/error, reintento, protección contra respuestas obsoletas y contra actualizaciones después del desmontaje.
+- `src/components/records/RecordsSyncView.tsx`: vista compartida para Entrenamiento y Predicción con título, descripción, contador, consulta automática, carga, vacío, error y reintento. Se eliminó el botón «Actualizar listado».
+- `src/components/records/RecordList.tsx`: lista semántica de resúmenes.
+- `src/components/records/RecordCard.tsx`: tarjeta con UUID, fecha, duración, frecuencia, cantidad de mediciones, actividad y estado; Predicción muestra “Sin etiqueta”.
+- `src/pages/TrainingPage.tsx` y `src/pages/PredictionPage.tsx`: las vistas provisionales de Sincronizar se sustituyen por `RecordsSyncView` con el tipo correspondiente.
+- `src/index.css`: estilos del listado, tarjetas, estados y adaptación responsive usando los tokens existentes. Se eliminaron los estilos del botón de actualización manual.
+- No se modificaron rutas, esquema SQLite, dependencias, captura, `DatabaseTest` ni archivos nativos de Android. No se implementó sincronización remota ni se usa `markAsSynced`.
+
+### Verificación estática
+
+- `npm run typecheck`: correcto.
+- `npm run lint`: correcto.
+- `npm run build`: correcto.
+
+### Validación Android confirmada por el usuario
+
+- Compatibilidad de SQLite con `json_array_length()`.
+- Listados separados de Entrenamiento y Predicción.
+- Información correcta en las tarjetas.
+- Cantidad de mediciones correcta.
+- Consulta automática al entrar a Sincronizar.
+- Persistencia de registros después de reiniciar.
+- Navegación correcta entre módulos.
+- Sin alteraciones de `estado_sync` ni sincronización remota.
+- Captura y guardado de ambos módulos sin regresiones.
+- Eliminación del botón «Actualizar listado», conservando «Reintentar» para errores.
+- Verificaciones `typecheck`, `lint` y `build` aprobadas.
+
+**3.8 queda completada y validada por el usuario.** La Fase 3 general permanece en progreso.
+
+## Siguiente tarea — 3.9: Validación integral en Android
+
+**Pendiente de iniciar.** Verificar de extremo a extremo ambos módulos, captura, guardado, listados, reinicio de capturas, persistencia tras cerrar/reabrir, navegación y regresión. Retirar la prueba temporal de la interfaz principal cuando el flujo equivalente esté validado. No implementar sincronización remota ni modificar el esquema SQLite.
