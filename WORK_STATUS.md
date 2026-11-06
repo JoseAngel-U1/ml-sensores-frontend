@@ -2,9 +2,9 @@
 
 ## Estado general
 
-**Etapa actual:** Fase 3 — Interfaz y captura, en progreso. Tareas 3.1, 3.2, 3.3, 3.4, 3.5 y 3.6 completadas y validadas; siguiente tarea: 3.7 — Guardado de capturas de Predicción en SQLite, pendiente de iniciar. Fases 1 y 2 completadas.
+**Etapa actual:** Fase 3 — Interfaz y captura, en progreso. Tareas 3.1, 3.2, 3.3, 3.4, 3.5, 3.6 y 3.7 completadas y validadas; siguiente tarea: 3.8 — Listado y gestión de registros locales para sincronización, pendiente de iniciar. Fases 1 y 2 completadas.
 
-**Estado de la tarea:** 3.6 — Guardado de capturas de Entrenamiento en SQLite completada y validada por el usuario en Android. La preparación y captura de 10 segundos, el guardado automático, el UUID por registro, la recuperación de aproximadamente 600 mediciones y la persistencia tras reiniciar funcionan correctamente. Predicción no presentó regresiones. La tarea 3.7 — Guardado de capturas de Predicción en SQLite queda como siguiente tarea pendiente de iniciar.
+**Estado de la tarea:** 3.7 — Guardado de capturas de Predicción en SQLite completada y validada por el usuario en Android. La preparación de 3 segundos, la captura de 10 segundos, el guardado automático, el UUID por registro, el tipo `prediccion`, la actividad `null`, el estado pendiente, la persistencia y la recuperación de aproximadamente 600 mediciones funcionan correctamente. La regresión de Entrenamiento fue superada tras integrar el hook compartido. La tarea 3.8 — Listado y gestión de registros locales para sincronización queda como siguiente tarea pendiente de iniciar.
 
 ## Trabajo completado
 
@@ -28,6 +28,7 @@
 - Tarea 3.4 completada: componentes reutilizables de captura validados por el usuario en navegador y Android, con reloj circular aprobado, selector de actividad mediante botones, captura funcional en ambos módulos y pruebas de SQLite conservadas.
 - Tarea 3.5 completada: preparación de 3 segundos antes de la captura real de 10 segundos en Entrenamiento y Predicción, validada por el usuario. Durante la preparación no se toman mediciones; la cancelación, limpieza y reutilización funcionan correctamente.
 - Tarea 3.6 completada: guardado automático de capturas de Entrenamiento en SQLite validado por el usuario en Android, con UUID por registro, recuperación de aproximadamente 600 mediciones y persistencia tras reiniciar. Predicción no presentó regresiones.
+- Tarea 3.7 completada: guardado automático de capturas de Predicción en SQLite validado por el usuario en Android, con hook compartido `useCaptureSave`, UUID por registro, tipo `prediccion`, actividad `null`, estado pendiente, persistencia y recuperación de aproximadamente 600 mediciones. La regresión de Entrenamiento fue superada.
 
 ## Verificación de la migración (2026-11-04)
 
@@ -81,11 +82,11 @@
 
 - Arquitectura y tareas verificables documentadas; hook de la tarea 3.1 validado. Creadas las dos páginas provisionales y estructura compartida de navegación; el diseño definitivo sigue pendiente.
 - La captura permanece en `src/hooks/useSensorCapture.ts`. Las vistas Captura de Entrenamiento y Predicción consumen el hook mediante `CaptureClock`, `ActivitySelector` (solo entrenamiento), `CaptureControls` y `CaptureResult`; estos componentes fueron validados por el usuario en navegador y Android. `DatabaseTest` sigue accesible dentro de un bloque desplegable en Captura de Entrenamiento. `CaptureTest.tsx` se conserva sin montarse en las rutas.
-- `App.tsx` declara rutas y `main.tsx` configura `BrowserRouter`. La base visual compartida de 3.3 y los componentes de captura de 3.4 están completados y validados por el usuario; las vistas definitivas siguen pendientes. Las tareas 3.5 y 3.6 están completadas y validadas por el usuario.
+- `App.tsx` declara rutas y `main.tsx` configura `BrowserRouter`. La base visual compartida de 3.3 y los componentes de captura de 3.4 están completados y validados por el usuario; las vistas definitivas siguen pendientes. Las tareas 3.5, 3.6 y 3.7 están completadas y validadas por el usuario.
 - Dependencias de navegación ya declaradas en `package.json`: `react-router-dom: ^7.18.5` y `@capacitor/app: ^8.1.2`. No se añadieron dependencias para el tema visual.
-- La tarea 3.6 expone métricas numéricas y muestras completas, rechaza capturas incompletas, guarda automáticamente con UUID, fecha y actividad fijados, y muestra estados de guardado con reintento. El guardado de capturas de Predicción queda para la tarea 3.7.
+- La tarea 3.6 expone métricas numéricas y muestras completas, rechaza capturas incompletas, guarda automáticamente con UUID, fecha y actividad fijados, y muestra estados de guardado con reintento. La tarea 3.7 extrajo esa orquestación a `useCaptureSave`, la reutiliza en Entrenamiento y Predicción y guarda las capturas de Predicción con `tipo: prediccion` y `actividad: null`. El listado y la gestión de registros locales para sincronización quedan para la tarea 3.8.
 - La tarea 3.1 modificó hook, consumo en App y el tipo de resultado; el usuario confirmó que las pruebas funcionan correctamente. El agente no ejecutó comandos ni verificaciones de código.
-- Sistema de Stitch y cuatro capturas disponibles y referenciados. Functional Palette tiene prioridad definitiva; se corrigieron en el YAML los tokens `background`, `surface`, `primary`, `on-background` y `on-surface`. Los roles adicionales sin equivalencia confirmada se conservan y se interpretarán solo si se utilizan, según la sección 6 de `docs/UI_ARCHITECTURE.md`. La base visual compartida ya está implementada y validada en 3.3; las tareas 3.4, 3.5 y 3.6 también están completadas y validadas, mientras que 3.7–3.9 siguen pendientes.
+- Sistema de Stitch y cuatro capturas disponibles y referenciados. Functional Palette tiene prioridad definitiva; se corrigieron en el YAML los tokens `background`, `surface`, `primary`, `on-background` y `on-surface`. Los roles adicionales sin equivalencia confirmada se conservan y se interpretarán solo si se utilizan, según la sección 6 de `docs/UI_ARCHITECTURE.md`. La base visual compartida ya está implementada y validada en 3.3; las tareas 3.4, 3.5, 3.6 y 3.7 también están completadas y validadas, mientras que 3.8–3.9 siguen pendientes.
 
 ## Validación completada
 
@@ -393,6 +394,21 @@ El usuario validó la tarea 3.6 en un dispositivo Android real: preparación de 
 
 **3.6 queda completada y validada por el usuario.** La Fase 3 general permanece en progreso.
 
-## Siguiente tarea — 3.7: Guardado de capturas de Predicción en SQLite
+## Tarea 3.7 — Guardado de capturas de Predicción en SQLite: completada y validada por el usuario
 
-**Pendiente de iniciar.** Integrar el guardado de las capturas de Predicción reutilizando el hook, los controles y el servicio existentes; guardar `tipo: prediccion` y `actividad: null`. Verificar recuperación y persistencia sin conexión, sin modificar el esquema aprobado ni el flujo ya validado de Entrenamiento.
+### Cambios realizados
+
+- `src/hooks/useCaptureSave.ts`: nuevo hook compartido que centraliza la validación de capturas, la creación de `CapturaPendiente`, el UUID, la fecha, el tipo, la actividad, el guardado, la detección de duplicados, los estados y el reintento.
+- `src/pages/TrainingPage.tsx`: refactorizado para consumir `useCaptureSave` con `tipo: "entrenamiento"` y conservar el comportamiento validado de 3.6.
+- `src/pages/PredictionPage.tsx`: guarda automáticamente al finalizar una captura con `tipo: "prediccion"` y `actividad: null`; muestra el estado de guardado y permite reintentar con el mismo UUID.
+- No se modificaron el esquema SQLite, `src/services/database.ts`, los tipos compartidos, los componentes de captura, las dependencias ni archivos nativos de Android.
+
+### Validación confirmada por el usuario
+
+El usuario validó la tarea 3.7 en un dispositivo Android real: preparación de 3 segundos y captura de 10 segundos correctas, guardado automático en SQLite correcto, UUID único por registro, tipo `prediccion`, actividad `null`, estado `pendiente`, persistencia y recuperación de aproximadamente 600 mediciones correctas. La prueba de regresión de Entrenamiento fue superada después de integrar el hook compartido. `npm run typecheck`, `npm run lint` y `npm run build` fueron correctos. El agente no ejecutó comandos, pruebas ni Git.
+
+**3.7 queda completada y validada por el usuario.** La Fase 3 general permanece en progreso.
+
+## Siguiente tarea — 3.8: Listado y gestión de registros locales para sincronización
+
+**Pendiente de iniciar.** Implementar las vistas internas Sincronizar reutilizando tarjetas, listados, el servicio SQLite y los tipos existentes. Consultar registros locales y filtrar por tipo; verificar estados pendiente/sincronizado, carga, vacío y error. El envío manual real queda en Fase 4; no simularlo ni marcar éxito remoto.

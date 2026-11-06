@@ -30,7 +30,7 @@ Resultado de referencia: 601 mediciones válidas en 10 segundos, con frecuencia 
 
 ## Fase 3 — Interfaz y captura
 
-**Estado: En progreso — tareas 3.1, 3.2, 3.3, 3.4, 3.5 y 3.6 completadas y validadas; siguiente tarea: 3.7, pendiente de iniciar**
+**Estado: En progreso — tareas 3.1, 3.2, 3.3, 3.4, 3.5, 3.6 y 3.7 completadas y validadas; siguiente tarea: 3.8, pendiente de iniciar**
 
 Referencia: [docs/UI_ARCHITECTURE.md](docs/UI_ARCHITECTURE.md). Solo dos páginas principales (`TrainingPage` y `PredictionPage`), cada una con vistas internas Captura y Sincronizar. Rutas aprobadas: `/entrenamiento`, `/entrenamiento/sincronizar`, `/prediccion` y `/prediccion/sincronizar`. `App.tsx` definirá las rutas y redirigirá las desconocidas a `/entrenamiento`; `AppLayout` compartirá encabezado, navegación inferior y contenido activo.
 
@@ -41,8 +41,8 @@ Referencia: [docs/UI_ARCHITECTURE.md](docs/UI_ARCHITECTURE.md). Solo dos página
 - [x] **3.4 — Compartir componentes de captura.** Completada y validada por el usuario en navegador y Android. Reloj y controles compartidos entre ambos módulos, con selector de actividad solo en entrenamiento y captura funcional en Predicción sin guardado. El usuario aprobó el reloj circular que inicia lleno y se vacía durante los 10 segundos, el selector mediante botones en lugar de desplegable y la conservación de las pruebas de SQLite.
 - [x] **3.5 — Incorporar cuenta regresiva de 3 segundos.** Completada y validada por el usuario. La preparación de 3 segundos funciona antes de la captura real de 10 segundos; durante la preparación no se toman mediciones. La cancelación, limpieza y reutilización funcionan correctamente, sin sesiones superpuestas.
 - [x] **3.6 — Guardado de capturas de Entrenamiento en SQLite.** Completada y validada por el usuario en Android. Se expusieron métricas numéricas y muestras completas, se rechazan las capturas incompletas y se guarda automáticamente un `Registro` con actividad obligatoria, UUID, fecha ISO y estado pendiente. Verificados el guardado, el UUID por registro, la recuperación de aproximadamente 600 mediciones y la persistencia tras reiniciar; Predicción no presentó regresiones.
-- [ ] **3.7 — Integrar guardado de predicción.** Siguiente tarea pendiente de iniciar. Reutilizar hook, controles y servicio; guardar `tipo: prediccion` y `actividad: null`. Verificar recuperación y persistencia sin conexión.
-- [ ] **3.8 — Implementar vistas internas Sincronizar.** Reutilizar tarjetas/listados, consultar registros locales y filtrar por tipo; verificar estados pendiente/sincronizado, carga, vacío y error. El envío manual real queda en Fase 4; no simularlo ni marcar éxito remoto.
+- [x] **3.7 — Integrar guardado de predicción.** Completada y validada por el usuario en Android. Se extrajo la lógica compartida a `useCaptureSave`, se reutilizó en Entrenamiento y Predicción, y se guarda automáticamente con `tipo: prediccion`, `actividad: null` y estado pendiente. Verificados UUID por registro, persistencia y recuperación de aproximadamente 600 mediciones; la regresión de Entrenamiento fue superada.
+- [ ] **3.8 — Listado y gestión de registros locales para sincronización.** Siguiente tarea pendiente de iniciar. Implementar las vistas internas Sincronizar reutilizando tarjetas/listados, consultar registros locales y filtrar por tipo; verificar estados pendiente/sincronizado, carga, vacío y error. El envío manual real queda en Fase 4; no simularlo ni marcar éxito remoto.
 - [ ] **3.9 — Validar el flujo completo en Android.** Verificar ambos módulos, reinicio de capturas, persistencia tras cerrar/reabrir y navegación; retirar la prueba temporal de la interfaz principal cuando el flujo equivalente esté validado.
 
 Las verificaciones de tipos, lint, build y Android de cada tarea serán ejecutadas manualmente por el usuario. Crear carpetas y componentes progresivamente, sin duplicar servicios/tipos existentes ni generar archivos vacíos.
