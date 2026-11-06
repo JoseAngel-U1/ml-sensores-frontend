@@ -2,7 +2,7 @@
 
 ## Alcance y estado
 
-Diseño aprobado para la integración inicial. Implementación pendiente de verificación manual de tipos, lint, compilación y persistencia en Android. Base nativa local, sin conexión a internet y sin almacenamiento alternativo en memoria o localStorage.
+Diseño aprobado e implementado. SQLite está implementado y validado en Android: guardado, recuperación, persistencia y listados locales funcionan en el dispositivo. Base nativa local, sin conexión a internet y sin almacenamiento alternativo en memoria o localStorage.
 
 - Base: `ml_sensores`.
 - Versión: `1`.
@@ -45,12 +45,12 @@ ON registros (estado_sync);
 En `src/types/records.ts`:
 
 ```typescript
-import type { MedicionSensor } from "./sensores";
+import type { MedicionCompleta } from "./sensores";
 
 export type Actividad = "quieto" | "caminando" | "corriendo";
 export type TipoRegistro = "entrenamiento" | "prediccion";
 export type EstadoSync = "pendiente" | "sincronizado";
-export type Medicion = MedicionSensor;
+export type Medicion = MedicionCompleta;
 
 export interface Registro {
   id: string;
@@ -62,9 +62,13 @@ export interface Registro {
   mediciones: Medicion[];
   estado_sync: EstadoSync;
 }
+
+export type RegistroResumen = Omit<Registro, "mediciones"> & {
+  totalMediciones: number;
+};
 ```
 
-`Medicion` reutiliza `MedicionSensor`: `tiempo_ms` y las seis lecturas `ax`, `ay`, `az`, `gx`, `gy`, `gz`. Aunque el tipo de captura admite lecturas nulas para contabilizar eventos incompletos, el servicio rechaza esas lecturas al guardar.
+`Medicion` reutiliza `MedicionCompleta`: `tiempo_ms` y las seis lecturas `ax`, `ay`, `az`, `gx`, `gy`, `gz`. Aunque el tipo de captura admite lecturas nulas para contabilizar eventos incompletos, el servicio rechaza esas lecturas al guardar.
 
 ## Reglas de almacenamiento
 
@@ -87,6 +91,7 @@ Archivo: `src/services/database.ts`.
 | `initializeDatabase()` | `Promise<void>`; abre la conexión y crea tabla/índice si faltan. |
 | `saveRecord(registro)` | `Promise<void>`; valida e inserta una instantánea del registro con estado pendiente. |
 | `getRecords()` | `Promise<Registro[]>`; lista todos por fecha descendente e ID ascendente. |
+| `getRecordSummaries(tipo)` | `Promise<RegistroResumen[]>`; lista resúmenes del tipo indicado, sin mediciones y con `totalMediciones` calculado mediante `json_array_length()`. |
 | `getPendingRecords()` | `Promise<Registro[]>`; lista únicamente pendientes. |
 | `getRecordById(id)` | `Promise<Registro \| null>`; recupera por UUID o devuelve `null`. |
 | `markAsSynced(id)` | `Promise<void>`; actualiza solo el estado, falla si el UUID no existe. No realiza ninguna comunicación de red. |
@@ -99,7 +104,7 @@ La conexión permanece abierta durante la sesión; cada escritura se confirma me
 
 El proyecto ya tiene SDK mínimo 24, SDK de compilación/objetivo 36, Java 21 y Android Gradle Plugin 8.13.2. Se revisó el Gradle del plugin instalado, que usa SDK 24/36 y Java 21. No se modificaron archivos nativos ni se requieren permisos de almacenamiento para la base privada.
 
-Ejecutar `npx cap sync android` para registrar el plugin instalado y copiar el build web. No editar manualmente `capacitor.build.gradle` ni otros archivos generados. No se configura SQLite web en esta etapa: en navegador la sección muestra un error indicando que requiere Android.
+Ejecutar `npx cap sync android` para registrar el plugin instalado y copiar el build web. No editar manualmente `capacitor.build.gradle` ni otros archivos generados. No se configura SQLite web en esta etapa: la persistencia nativa requiere Android.
 
 ## Comandos manuales
 
@@ -115,17 +120,15 @@ npx cap open android
 
 No hace falta instalar otra dependencia para esta integración. Estos comandos no fueron ejecutados por el agente.
 
-## Prueba de persistencia en Xiaomi 11T
+## Validación de persistencia en Android
 
-1. Ejecutar la aplicación actualizada desde Android Studio. Activar modo avión para probar el almacenamiento sin conexión.
-2. En «Prueba temporal de SQLite», pulsar «Inicializar base de datos» dos veces. Ambas operaciones deben finalizar correctamente y conservar los datos.
-3. Pulsar «Guardar registro de prueba». Se genera un UUID en Android y un entrenamiento `quieto` con dos mediciones sintéticas, duración 10000 ms, frecuencia 0.2 Hz y estado pendiente. No es una captura real.
-4. Comprobar el mensaje «JSON verificado», que aparece tras guardar, consultar por UUID y comparar las mediciones recuperadas con las originales.
-5. Anotar el UUID. Consultar todos y pendientes: debe aparecer con estado `pendiente`. Guardar un segundo registro: debe tener otro UUID.
-6. Cerrar la aplicación y forzar su detención desde Ajustes de Android. No desinstalar ni borrar datos.
-7. Reabrir sin conexión, inicializar y consultar **antes de guardar otro registro**. Ambos UUID deben permanecer.
-8. Introducir el UUID anotado y pulsar «Consultar por UUID». Verificar fecha original, estado y las dos mediciones deserializadas: tiempos 0 y 5000 ms, lecturas 0.1–0.6 y 1.1–1.6.
-9. Consultar un UUID inexistente: debe indicar que no existe sin perder los registros anteriores.
-10. Ejecutar la captura real de sensores de 10 segundos y comprobar sus métricas habituales. La sección SQLite no guarda ni modifica esa captura.
+La integración fue validada por el usuario en un dispositivo Android real:
 
-`markAsSynced` queda disponible en el servicio, sin botón que simule una sincronización real. Su ejecución y los casos negativos de validación (lecturas nulas/no finitas, duplicados y combinaciones tipo/actividad incorrectas) quedan pendientes de verificación manual adicional. No se considera validada la integración hasta recibir los resultados de las verificaciones y de la prueba física.
+1. Entrenamiento y Predicción capturaron 10 segundos tras 3 segundos de preparación.
+2. Cada captura se guardó automáticamente con UUID, fecha, tipo, actividad y estado pendiente.
+3. Los listados Sincronizar mostraron los resúmenes por tipo y la cantidad de mediciones.
+4. Los registros persistieron tras cerrar y reabrir la aplicación.
+5. Los registros se conservaron sin conexión a internet.
+6. No se modificó el esquema, no se borraron registros y no se implementó sincronización remota.
+
+La interfaz ya no incluye la sección temporal de prueba con datos sintéticos; fue retirada y eliminada en la tarea 3.9-A. `markAsSynced` permanece disponible en el servicio, sin botón que simule una sincronización real. Su ejecución real corresponde a la Fase 4 — Integración con FastAPI y MongoDB.

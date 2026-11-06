@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { NavLink, useMatch } from "react-router-dom";
-import DatabaseTest from "../components/DatabaseTest";
 import ActivitySelector from "../components/capture/ActivitySelector";
 import CaptureClock from "../components/capture/CaptureClock";
 import CaptureControls from "../components/capture/CaptureControls";
@@ -64,13 +63,6 @@ function TrainingCapture() {
           </>
         )}
       </section>
-
-      <details className="surface-card capture-debug">
-        <summary>Abrir prueba de SQLite (temporal)</summary>
-        <div className="capture-test">
-          <DatabaseTest />
-        </div>
-      </details>
     </>
   );
 }

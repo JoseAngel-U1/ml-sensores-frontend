@@ -30,9 +30,9 @@ Resultado de referencia: 601 mediciones válidas en 10 segundos, con frecuencia 
 
 ## Fase 3 — Interfaz y captura
 
-**Estado: En progreso — tareas 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7 y 3.8 completadas y validadas; siguiente tarea: 3.9 — Validación integral en Android, pendiente de iniciar**
+**Estado: Completada — tareas 3.1 a 3.9 completadas y validadas; Fase 3 finalizada. Siguiente etapa: Fase 4 — Integración con FastAPI y MongoDB, pendiente de iniciar**
 
-Referencia: [docs/UI_ARCHITECTURE.md](docs/UI_ARCHITECTURE.md). Solo dos páginas principales (`TrainingPage` y `PredictionPage`), cada una con vistas internas Captura y Sincronizar. Rutas aprobadas: `/entrenamiento`, `/entrenamiento/sincronizar`, `/prediccion` y `/prediccion/sincronizar`. `App.tsx` definirá las rutas y redirigirá las desconocidas a `/entrenamiento`; `AppLayout` compartirá encabezado, navegación inferior y contenido activo.
+Referencia: [docs/UI_ARCHITECTURE.md](docs/UI_ARCHITECTURE.md). Solo dos páginas principales (`TrainingPage` y `PredictionPage`), cada una con vistas internas Captura y Sincronizar. Rutas aprobadas: `/entrenamiento`, `/entrenamiento/sincronizar`, `/prediccion` y `/prediccion/sincronizar`. `App.tsx` define las rutas y redirige las desconocidas a `/entrenamiento`; `AppLayout` comparte encabezado, navegación inferior y contenido activo.
 
 - [x] Documentar arquitectura, reutilización de código existente y paleta exclusivamente clara.
 - [x] **3.1 — Extraer el hook reutilizable de sensores.** Completada y validada por el usuario. La lógica está separada de `App.tsx` en `useSensorCapture`; la captura de 10 segundos sigue funcionando, con frecuencia medida, validación, mediciones completas en el resultado y limpieza de recursos.
@@ -43,13 +43,15 @@ Referencia: [docs/UI_ARCHITECTURE.md](docs/UI_ARCHITECTURE.md). Solo dos página
 - [x] **3.6 — Guardado de capturas de Entrenamiento en SQLite.** Completada y validada por el usuario en Android. Se expusieron métricas numéricas y muestras completas, se rechazan las capturas incompletas y se guarda automáticamente un `Registro` con actividad obligatoria, UUID, fecha ISO y estado pendiente. Verificados el guardado, el UUID por registro, la recuperación de aproximadamente 600 mediciones y la persistencia tras reiniciar; Predicción no presentó regresiones.
 - [x] **3.7 — Integrar guardado de predicción.** Completada y validada por el usuario en Android. Se extrajo la lógica compartida a `useCaptureSave`, se reutilizó en Entrenamiento y Predicción, y se guarda automáticamente con `tipo: prediccion`, `actividad: null` y estado pendiente. Verificados UUID por registro, persistencia y recuperación de aproximadamente 600 mediciones; la regresión de Entrenamiento fue superada.
 - [x] **3.8 — Listado y gestión de registros locales para sincronización.** Completada y validada por el usuario en Android. Las vistas internas Sincronizar consultan resúmenes por tipo con `getRecordSummaries`, muestran tarjetas con UUID, fecha, duración, frecuencia, cantidad de mediciones, actividad y estado, y cubren carga, vacío, error y reintento. Se confirmó la compatibilidad de SQLite con `json_array_length()`, el filtrado por tipo, la consulta automática al entrar, la persistencia, la navegación y la ausencia de cambios en `estado_sync` o sincronización remota. Se eliminó el botón «Actualizar listado» conservando «Reintentar» para errores. `typecheck`, `lint` y `build` fueron aprobados; captura y guardado de ambos módulos no presentaron regresiones. El envío manual real queda en Fase 4.
-- [ ] **3.9 — Validación integral en Android.** Siguiente tarea pendiente de iniciar. Verificar de extremo a extremo ambos módulos, captura, guardado, listados, reinicio de capturas, persistencia tras cerrar/reabrir, navegación y regresión; retirar la prueba temporal de la interfaz principal cuando el flujo equivalente esté validado.
+- [x] **3.9 — Validación integral en Android.** Completada y validada por el usuario. La limpieza 3.9-A retiró `DatabaseTest`, `CaptureTest`, sus estilos exclusivos y `App.css`. La validación 3.9-B confirmó Entrenamiento y Predicción de extremo a extremo: captura, guardado SQLite, listados, persistencia, navegación y funcionamiento sin internet. Se conservaron los registros existentes, no se modificó el esquema SQLite y no se implementó sincronización remota.
 
-Las verificaciones de tipos, lint, build y Android de cada tarea serán ejecutadas manualmente por el usuario. Crear carpetas y componentes progresivamente, sin duplicar servicios/tipos existentes ni generar archivos vacíos.
+Las verificaciones de tipos, lint, build y Android de cada tarea fueron ejecutadas manualmente por el usuario. Las carpetas y componentes se crearon progresivamente, sin duplicar servicios/tipos existentes ni generar archivos vacíos.
 
-## Fase 4 — Backend y sincronización
+## Fase 4 — Integración con FastAPI y MongoDB
 
-**Estado: Pendiente**
+**Estado: Pendiente — siguiente etapa, no iniciada**
+
+La Fase 3 quedó finalizada; la sincronización remota y la integración con el backend se abordarán en esta fase.
 
 - [ ] Crear API con FastAPI.
 - [ ] Configurar MongoDB.

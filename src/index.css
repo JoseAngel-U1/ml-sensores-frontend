@@ -375,63 +375,6 @@ pre {
   color: var(--color-on-primary);
 }
 
-/* Presentación de las pruebas existentes, sin convertirlas en módulos definitivos. */
-.capture-test__results {
-  margin-top: var(--space-lg);
-}
-
-.capture-test__data {
-  white-space: pre-wrap;
-}
-
-.capture-test fieldset {
-  min-width: 0;
-  margin: var(--space-md) 0;
-  padding: var(--space-md);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-card);
-}
-
-.capture-test legend {
-  max-width: 100%;
-  padding-inline: var(--space-xs);
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-small);
-}
-
-.capture-test fieldset > button {
-  margin-bottom: var(--space-xs);
-}
-
-.capture-test fieldset > p {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-xs);
-  margin-block: var(--space-xs) 0;
-}
-
-.capture-test input {
-  flex: 1 1 12rem;
-  min-width: 0;
-  font-family: var(--font-mono);
-}
-
-.capture-test [role='status'] {
-  padding: var(--space-sm);
-  border-radius: var(--radius-control);
-  background: var(--color-primary-soft);
-  color: var(--color-text);
-}
-
-.capture-test [role='alert'] {
-  padding: var(--space-sm);
-  border: 1px solid var(--color-error-border);
-  border-radius: var(--radius-control);
-  background: var(--color-error-background);
-  color: var(--color-error);
-}
-
 @media (hover: hover) {
   button:enabled:hover,
   .button:not([aria-disabled='true']):hover {
@@ -809,8 +752,7 @@ pre {
   margin-top: var(--space-md);
 }
 
-.capture-result__details > summary,
-.capture-debug > summary {
+.capture-result__details > summary {
   display: flex;
   align-items: center;
   min-height: var(--touch-target);
@@ -819,19 +761,12 @@ pre {
   cursor: pointer;
 }
 
-.capture-result__details[open] > summary,
-.capture-debug[open] > summary {
+.capture-result__details[open] > summary {
   margin-bottom: var(--space-md);
 }
 
 .capture-result__details h3 {
   margin-top: var(--space-md);
-}
-
-.capture-debug {
-  width: 100%;
-  max-width: 60rem;
-  margin: var(--space-lg) auto 0;
 }
 
 @media (hover: hover) {

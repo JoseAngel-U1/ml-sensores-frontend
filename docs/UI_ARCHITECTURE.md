@@ -1,31 +1,34 @@
-# Arquitectura de interfaz — Fase 3
+# Arquitectura de interfaz — Fase 3 (completada)
 
 ## Estado y alcance
 
-Arquitectura aprobada. La extracción del hook de la tarea 3.1 está implementada y pendiente de validación manual en Android; rutas, páginas e interfaz definitiva siguen pendientes. Las fases 1 y 2 están completadas y SQLite está validado según confirmación del usuario.
+Arquitectura aprobada e implementada. La Fase 3 está completada y validada en Android: navegación, tema claro, captura, guardado SQLite y listados locales funcionan de extremo a extremo. Las fases 1 y 2 también están completadas y SQLite está validado según confirmación del usuario.
 
-La Fase 3 comprende navegación, tema claro, captura y consulta de registros locales. Las vistas «Sincronizar» preparan la interfaz de sincronización manual; el envío a FastAPI y la integración remota corresponden a la Fase 4.
+La Fase 3 comprende navegación, tema claro, captura y consulta de registros locales. Las vistas «Sincronizar» muestran los registros locales de su tipo; el envío a FastAPI y la integración remota corresponden a la Fase 4 — Integración con FastAPI y MongoDB, pendiente de iniciar.
 
 ## 1. Inventario actual y reutilización
 
-| Archivo existente | Responsabilidad actual | Uso previsto |
+| Archivo | Responsabilidad actual | Uso |
 |---|---|---|
-| `src/main.tsx` | Monta React con `StrictMode` e importa `index.css`. | Conservar como entrada; conectar el proveedor de React Router cuando se implemente la navegación. |
-| `src/App.tsx` | Consume `useSensorCapture` y presenta la prueba actual; incluye `DatabaseTest`. | Pasar posteriormente a definir las rutas permitidas. |
-| `src/hooks/useSensorCapture.ts` | Encapsula la sesión, eventos, temporización y resultados; pendiente de validación de la extracción. | Reutilizar en las futuras páginas con un solo consumidor de captura activo. |
-| `src/components/DatabaseTest.tsx` | Prueba temporal de SQLite con datos sintéticos y consulta por UUID. | Mantener como referencia de validación durante la transición; no convertirlo en una tercera página ni copiar su lógica a cada módulo. |
-| `src/services/database.ts` | Inicialización y conexión compartida; validación, inserción, consulta y actualización SQLite. | Único servicio de persistencia para ambas páginas. Reutilizar sus seis funciones públicas. |
-| `src/types/sensores.ts` | `EstadoCaptura`, `MedicionSensor`, `ResultadoCaptura` con mediciones completas. | Contratos del hook y de los futuros componentes de captura. |
-| `src/types/records.ts` | `Actividad`, `TipoRegistro`, `EstadoSync`, `Medicion`, `Registro`. | Contrato común para guardar y mostrar registros de ambos tipos; `Medicion` ya reutiliza `MedicionSensor`. |
-| `src/index.css`, `src/App.css`, `src/assets/` | Estilos y recursos existentes; `App.tsx` también tiene estilos en línea. | Revisar su uso al aplicar el tema claro, sin crear un segundo sistema de temas. |
+| `src/main.tsx` | Monta React con `StrictMode`, `BrowserRouter` e importa `index.css`. | Entrada de la aplicación. |
+| `src/App.tsx` | Declara las cuatro rutas y la redirección de rutas desconocidas. | Mapa de navegación validado. |
+| `src/hooks/useSensorCapture.ts` | Encapsula la sesión, eventos, temporización y resultados. | Consumido por las vistas Captura de ambos módulos; validado. |
+| `src/hooks/useCaptureSave.ts` | Coordina validación, UUID, fecha, tipo/actividad, guardado y reintento. | Guardado automático compartido; validado. |
+| `src/hooks/useRecordSummaries.ts` | Consulta resúmenes por tipo, carga, error y reintento. | Listados de las vistas Sincronizar; validado. |
+| `src/services/database.ts` | Inicialización y conexión compartida; validación, inserción, consulta, resúmenes y actualización SQLite. | Único servicio de persistencia para ambas páginas. Reutilizar sus siete funciones públicas. |
+| `src/types/sensores.ts` | `EstadoCaptura`, `MedicionSensor`, `ResultadoCaptura` con mediciones completas. | Contratos del hook y de los componentes de captura. |
+| `src/types/records.ts` | `Actividad`, `TipoRegistro`, `EstadoSync`, `Medicion`, `Registro` y `RegistroResumen`. | Contrato común para guardar y mostrar registros de ambos tipos; `Medicion` reutiliza `MedicionSensor`. |
+| `src/index.css`, `src/assets/` | Estilos y recursos existentes. | Tema claro y presentación; sin un segundo sistema de temas. |
 
-Actualmente existe `hooks/useSensorCapture.ts`; no existen `pages/`, `layouts/`, `shared/` ni las subcarpetas de componentes propuestas. React Router no aparece en las dependencias declaradas. No existe un servicio FastAPI.
+La estructura de páginas, layouts, componentes compartidos, hooks y servicios está implementada. React Router está declarado en las dependencias. No existe un servicio FastAPI en esta fase.
+
+`DatabaseTest.tsx`, `CaptureTest.tsx` y `App.css` fueron eliminados en la tarea 3.9-A; no forman parte de la arquitectura actual.
 
 El diseño persistente de registros sigue siendo el de [SQLITE_DESIGN.md](SQLITE_DESIGN.md); esta arquitectura no redefine su tabla ni sus restricciones. El estado actualizado de validación se registra en `WORK_STATUS.md`.
 
 ## 2. Páginas y rutas aprobadas
 
-Solo habrá **dos páginas principales**, cada una con dos vistas internas:
+Hay solo **dos páginas principales**, cada una con dos vistas internas:
 
 | Ruta | Página | Vista |
 |---|---|---|
@@ -34,12 +37,12 @@ Solo habrá **dos páginas principales**, cada una con dos vistas internas:
 | `/prediccion` | `PredictionPage` | Captura |
 | `/prediccion/sincronizar` | `PredictionPage` | Sincronizar |
 
-- `App.tsx` declarará explícitamente las cuatro rutas y la redirección de cualquier ruta desconocida a `/entrenamiento`, incluyendo `/`.
-- React Router será la fuente de verdad para la navegación. La vista activa procederá de la ruta, evitando un estado local de pestaña que pueda contradecir la URL.
-- La navegación inferior cambiará entre Entrenamiento y Predicción. Los controles internos de cada página enlazarán sus vistas Captura y Sincronizar.
-- `AppLayout` compartirá encabezado, navegación inferior y un espacio de contenido para la página/vista activa, que podrá materializarse mediante `Outlet` al implementar las rutas.
-- Las vistas internas podrán componerse con componentes reutilizables; no se crearán cuatro páginas principales ni rutas adicionales para tarjetas, resultados o pruebas técnicas.
-- La elección del proveedor de Router y los detalles de integración con el historial de Android se verificarán al implementar la navegación. Las rutas lógicas de esta tabla son el contrato aprobado.
+- `App.tsx` declara explícitamente las cuatro rutas y la redirección de cualquier ruta desconocida a `/entrenamiento`, incluyendo `/`.
+- React Router es la fuente de verdad para la navegación. La vista activa procede de la ruta, evitando un estado local de pestaña que pueda contradecir la URL.
+- La navegación inferior cambia entre Entrenamiento y Predicción. Los controles internos de cada página enlazan sus vistas Captura y Sincronizar.
+- `AppLayout` comparte encabezado, navegación inferior y un espacio de contenido para la página/vista activa.
+- Las vistas internas se componen con componentes reutilizables; no existen cuatro páginas principales ni rutas adicionales para tarjetas, resultados o pruebas técnicas.
+- La integración con el historial de Android fue validada en la tarea 3.9-B. Las rutas lógicas de esta tabla son el contrato aprobado.
 
 ### Diagrama de navegación
 
@@ -67,54 +70,56 @@ flowchart TD
     Nav --> PC
 ```
 
-## 3. Organización propuesta
+## 3. Organización implementada
 
-Los nombres de componentes auxiliares son propuestas de implementación. El hook `useSensorCapture` ya está extraído, pendiente de validación. El resto se creará progresivamente, cuando tenga una responsabilidad concreta y un consumidor; no se crearán archivos vacíos.
+La estructura se creó progresivamente, con una responsabilidad concreta y un consumidor por archivo. No se crearon archivos vacíos ni se duplicaron servicios o tipos.
 
 ```text
 src/
-├── main.tsx                         # Existente: entrada de React
-├── App.tsx                          # Existente: futuro mapa de rutas
-├── index.css                        # Existente: futura base del tema claro
-├── App.css                          # Existente: revisar su uso al aplicar estilos
-├── assets/                          # Existente
-├── pages/                           # Propuesto
+├── main.tsx                         # Entrada de React con BrowserRouter
+├── App.tsx                          # Mapa de rutas
+├── index.css                        # Tema claro y estilos compartidos
+├── assets/
+├── pages/
 │   ├── TrainingPage.tsx             # Captura y Sincronizar de entrenamiento
 │   └── PredictionPage.tsx           # Captura y Sincronizar de predicción
-├── layouts/                         # Propuesto
+├── layouts/
 │   └── AppLayout.tsx
-├── shared/                          # Propuesto: elementos comunes de navegación
+├── shared/
 │   ├── Header.tsx
 │   └── BottomNavigation.tsx
 ├── components/
-│   ├── DatabaseTest.tsx             # Existente: prueba temporal
-│   ├── capture/                     # Propuesto
+│   ├── capture/
 │   │   ├── CaptureClock.tsx
 │   │   ├── ActivitySelector.tsx
-│   │   └── CaptureControls.tsx
-│   ├── records/                     # Propuesto
-│   │   ├── RecordCard.tsx
-│   │   └── RecordList.tsx
-│   └── ui/                          # Propuesto: botones e indicadores genéricos
-├── hooks/                           # Existente: extracción pendiente de validar
+│   │   ├── CaptureControls.tsx
+│   │   ├── CaptureResult.tsx
+│   │   └── CaptureSaveStatus.tsx
+│   └── records/
+│       ├── RecordCard.tsx
+│       ├── RecordList.tsx
+│       └── RecordsSyncView.tsx
+├── hooks/
+│   ├── useAndroidBackNavigation.ts
+│   ├── useCaptureSave.ts
+│   ├── useRecordSummaries.ts
 │   └── useSensorCapture.ts
 ├── services/
-│   └── database.ts                  # Existente: conservar servicio compartido
+│   └── database.ts                  # Servicio compartido de persistencia
 └── types/
-    ├── sensores.ts                  # Existente: reutilizar contratos de captura
-    └── records.ts                   # Existente: reutilizar contrato persistente
+    ├── sensores.ts                  # Contratos de captura
+    └── records.ts                   # Contrato persistente y resúmenes
 ```
 
 ### Límites de responsabilidad
 
-| Elemento | Responsabilidad | Dependencias previstas |
+| Elemento | Responsabilidad | Dependencias |
 |---|---|---|
 | Páginas | Componer la vista correspondiente a la ruta, fijar el tipo de registro y coordinar captura, guardado y consulta. | Hook, componentes y servicio SQLite existente. |
 | `AppLayout` | Estructura común y espacio de contenido activo. | Encabezado, navegación y Router; sin SQL ni listeners de sensores. |
 | `shared/` | Identidad de la sección y navegación común a las dos páginas. | Rutas y estado activo de Router. |
 | `components/capture/` | Mostrar tiempo, actividad y acciones mediante propiedades y callbacks. | Tipos de sensores/registros; sin conexión SQLite propia. |
-| `components/records/` | Presentar listas, UUID, actividad cuando corresponda, métricas y estado de sincronización. | `Registro` y callbacks; sin duplicar consultas SQL. |
-| `components/ui/` | Botones, indicadores y elementos visuales independientes del dominio. | Propiedades de presentación y accesibilidad. |
+| `components/records/` | Presentar listas, UUID, actividad cuando corresponda, métricas y estado de sincronización. | `Registro`, `RegistroResumen` y callbacks; sin duplicar consultas SQL. |
 | Hook de captura | Suscripción a `devicemotion`, referencias, temporizadores, mediciones y resultado. | Tipos existentes y APIs del navegador; sin navegación, SQL ni red. |
 | `services/database.ts` | Persistencia, validación de entrada y lectura, serialización JSON y conexión. | Plugin SQLite y tipos existentes. |
 | `types/` | Contratos compartidos de sensores y registros. | Reutilizar las definiciones actuales en lugar de versiones por página. |
@@ -129,42 +134,42 @@ src/
 | Presentación | Reloj y controles compartidos. | Los mismos componentes. |
 | Persistencia | UUID en el dispositivo, fecha ISO, SQLite y estado inicial pendiente. | El mismo contrato y servicio. |
 | Registros | Tarjetas/lista compartidas, filtradas por tipo entrenamiento. | Tarjetas/lista compartidas, filtradas por tipo predicción. |
-| Sincronización | Manual, desde su vista interna. | Manual, desde su vista interna. |
+| Sincronización | Interfaz local; envío real pendiente de Fase 4. | Interfaz local; envío real pendiente de Fase 4. |
 
 `ActivitySelector` solo se monta en entrenamiento. El reloj, los controles, las tarjetas y los listados no se duplican por módulo: reciben datos y acciones apropiados mediante propiedades. Compartir el hook significa compartir implementación; no implica un estado global de captura ni dos suscripciones activas simultáneas.
 
 ## 5. Relación entre captura, páginas y SQLite
 
-Flujo previsto:
+Flujo implementado:
 
 1. La página determina `TipoRegistro` y, para entrenamiento, recoge `Actividad`.
 2. Los controles invocan el hook; el reloj representa su progreso. El hook recibe `devicemotion` y produce mediciones y métricas.
-3. Al guardar, la coordinación de la página construye un `Registro` con UUID generado en Android, fecha ISO UTC y estado `pendiente`.
-4. `saveRecord` valida y persiste utilizando la conexión existente. La página muestra confirmación solo después del éxito y presenta cualquier error sin simular un guardado.
-5. Las vistas Sincronizar consultan `getRecords` o `getPendingRecords`, filtran por `tipo` y reutilizan `RecordList`/`RecordCard`. Las funciones actuales consultan ambos tipos; no se propondrá otra base ni otro servicio para separarlos.
-6. `getRecordById` permite recuperar el registro cuando sea necesario. La futura sincronización de Fase 4 usará `markAsSynced` únicamente tras confirmación remota; esta función por sí sola no envía datos.
+3. `useCaptureSave` construye un `Registro` con UUID generado en Android, fecha ISO UTC y estado `pendiente`.
+4. `saveRecord` valida y persiste utilizando la conexión existente. La interfaz muestra confirmación solo después del éxito y presenta cualquier error sin simular un guardado.
+5. Las vistas Sincronizar consultan `getRecordSummaries(tipo)` y reutilizan `RecordList`/`RecordCard`. La consulta filtra por tipo y calcula la cantidad de mediciones con `json_array_length()`.
+6. `getRecordById` permite recuperar el registro cuando sea necesario. La sincronización de Fase 4 usará `markAsSynced` únicamente tras confirmación remota; esta función por sí sola no envía datos.
 
-La base se inicializa con el servicio actual; sus operaciones ya solicitan la inicialización cuando es necesaria. Las páginas no crean conexiones SQLite.
+La base se inicializa con el servicio actual; sus operaciones solicitan la inicialización cuando es necesaria. Las páginas no crean conexiones SQLite.
 
-### Interfaz del hook extraído — tarea 3.1 pendiente de validar
+### Interfaz del hook extraído — validada
 
-`useSensorCapture()` devuelve `estado: EstadoCaptura`, `segundos: number`, `resultado: ResultadoCaptura | null` e `iniciar(): void`. Conserva los 10000 ms objetivo, la comprobación cada 100 ms, `performance.now()`, los seis valores, los conteos y la frecuencia `total / duración real`. App mantiene la prueba actual como consumidor.
+`useSensorCapture()` devuelve `estado: EstadoCaptura`, `segundos: number`, `resultado: ResultadoCaptura | null` e `iniciar(): void`. Conserva los 10000 ms objetivo, la comprobación cada 100 ms, `performance.now()`, los seis valores, los conteos y la frecuencia `total / duración real`. Las vistas Captura de `TrainingPage` y `PredictionPage` son los consumidores actuales.
 
 `iniciar` ignora llamadas si su instancia ya captura o está desmontada. Listener e intervalo pertenecen a la sesión y se retiran al finalizar o desmontar, limpiando referencias temporales. Al desmontar no se publica resultado parcial. El contrato exige un solo consumidor activo; no se introduce un gestor global de sesiones entre múltiples instancias.
 
 `ResultadoCaptura` se amplió únicamente con `mediciones: MedicionSensor[]`: instantánea completa, sin filtrar muestras, publicada al terminar. El búfer no se expone durante la captura. El resultado se conserva hasta iniciar la siguiente sesión o desmontar; no constituye historial ni guardado SQLite. No se expone parada anticipada para conservar la captura automática de 10 segundos.
 
-Duración y frecuencia siguen siendo cadenas con dos decimales para presentación, mientras `Registro` exige números y duración en milisegundos. La integración futura del guardado deberá exponer las magnitudes numéricas originales; el formato de pantalla no será la fuente de datos persistidos.
+Duración y frecuencia se muestran como cadenas con dos decimales, mientras `Registro` exige números y duración en milisegundos. La integración del guardado usa las magnitudes numéricas originales; el formato de pantalla no es la fuente de datos persistidos.
 
-La captura actual contabiliza muestras incompletas y SQLite rechaza lecturas nulas/no finitas. Antes de conectar el guardado se debe acordar cómo informar y tratar una sesión con muestras incompletas; no se asumirá un filtrado silencioso ni se relajarán las restricciones de SQLite.
+La captura contabiliza muestras incompletas y SQLite rechaza lecturas nulas/no finitas. La implementación actual no guarda capturas con muestras incompletas y muestra un estado de error para repetir la captura; no se relajan las restricciones de SQLite.
 
-La cuenta regresiva de 3 segundos ya prevista en el roadmap se implementará después de verificar la extracción: precede a los 10 segundos de captura y no forma parte de su duración ni de su frecuencia. La política de navegación durante cuenta regresiva/captura deberá definirse antes de activar esos flujos, garantizando limpieza de recursos y sin guardados parciales automáticos.
+La cuenta regresiva de 3 segundos está implementada antes de la captura de 10 segundos y no forma parte de su duración ni frecuencia. La navegación durante preparación/captura desmonta la vista y limpia recursos sin guardar capturas parciales; esta política fue validada en Android.
 
 ## 6. Tema visual aprobado
 
 Solo tema claro. Sin modo oscuro ni selector de temas.
 
-La fuente oficial de colores, tipografía, espaciados y estilos para la implementación futura es el documento original de Google Stitch: [docs/design/DESIGN.md](design/DESIGN.md). Consultarlo directamente para los valores y reglas visuales; esta arquitectura no mantiene una copia del sistema completo de estilos.
+La fuente oficial de colores, tipografía, espaciados y estilos es el documento original de Google Stitch: [docs/design/DESIGN.md](design/DESIGN.md). Consultarlo directamente para los valores y reglas visuales; esta arquitectura no mantiene una copia del sistema completo de estilos.
 
 Las capturas de las cuatro vistas se encuentran en [docs/design/references/](design/references/):
 
@@ -195,29 +200,27 @@ Se corrigieron únicamente los tokens con equivalencia semántica clara:
 
 **Tokens adicionales pendientes de interpretación si se utilizan:** se conservan las variantes `surface-dim`, `surface-bright`, `surface-variant`, la escala `surface-container-*`, `surface-tint`, `on-surface-variant`, los roles de contenedor y sus textos, y las familias secundarias, terciarias, inversas y fijas. La paleta funcional no establece una correspondencia completa para esos roles. En particular, `on-surface-variant: #3E4940` no se considera una equivalencia confirmada del texto secundario `#506557`, ni se convierte automáticamente un contenedor en el verde suave `#E4F3E9`. Los colores de error y contorno también se conservan como roles adicionales, sin reinterpretar reglas de bordes o avisos.
 
-Para los usos aprobados de verde suave, texto secundario y texto sobre verde, aplicar respectivamente `#E4F3E9`, `#506557` y `#FFFFFF`, conforme a la paleta y las reglas del cuerpo del documento; no sustituirlos por un token adicional solo por su nombre. La base visual queda lista para la Fase 3. Interpretar un rol adicional será necesario solo si se decide utilizarlo, sin desplazar la paleta prioritaria ni ampliar el alcance funcional.
+Para los usos aprobados de verde suave, texto secundario y texto sobre verde, aplicar respectivamente `#E4F3E9`, `#506557` y `#FFFFFF`, conforme a la paleta y las reglas del cuerpo del documento; no sustituirlos por un token adicional solo por su nombre. La base visual de la Fase 3 está implementada y validada. Interpretar un rol adicional será necesario solo si se decide utilizarlo, sin desplazar la paleta prioritaria ni ampliar el alcance funcional.
 
-El documento original y las cuatro capturas ya están disponibles. El tema claro sigue pendiente de implementación; la prueba actual aún contiene estilos oscuros en línea.
+El documento original y las cuatro capturas están disponibles. El tema claro está implementado y validado en Android; las pruebas temporales con estilos oscuros fueron retiradas en 3.9-A.
 
-## 7. Implementación progresiva y verificación
+## 7. Implementación y verificación
 
-La lista verificable se mantiene en la Fase 3 de `ROADMAP.md`. Orden recomendado:
+La Fase 3 quedó implementada y validada. Orden ejecutado:
 
-1. Extraer y validar el hook conservando la prueba actual.
-2. Incorporar React Router, dos páginas y `AppLayout` con navegación funcional.
-3. Aplicar la paleta clara y componentes visuales comunes siguiendo Stitch.
-4. Integrar reloj, controles reutilizables y selector exclusivo de entrenamiento.
-5. Añadir la cuenta regresiva y acordar el comportamiento al navegar durante una captura.
-6. Conectar el guardado de ambos tipos con el servicio y contrato existentes, resolviendo métricas y muestras incompletas.
-7. Construir las vistas Sincronizar con listados locales por tipo y estados de carga, vacío y error. Hasta Fase 4, el envío remoto debe indicarse como no disponible y no marcar registros como sincronizados.
-8. Validar navegación, captura y persistencia offline en Android y retirar la sección temporal de la interfaz principal cuando el flujo definitivo equivalente esté comprobado.
+1. Hook de captura extraído y validado conservando el comportamiento de 10 segundos.
+2. React Router, dos páginas y `AppLayout` con navegación funcional.
+3. Paleta clara y componentes visuales comunes siguiendo Stitch.
+4. Reloj, controles reutilizables y selector exclusivo de entrenamiento.
+5. Cuenta regresiva de 3 segundos y política de navegación durante la captura.
+6. Guardado de ambos tipos con el servicio y contrato existentes.
+7. Vistas Sincronizar con listados locales por tipo y estados de carga, vacío y error. El envío remoto queda para la Fase 4 y no marca registros como sincronizados.
+8. Validación integral en Android y limpieza de pruebas temporales (3.9-A y 3.9-B).
 
-Para cada tarea de código, el usuario ejecutará manualmente las verificaciones de tipos, lint y build, y la sincronización/prueba Android cuando corresponda. Deben verificarse las cuatro rutas, el acceso a rutas desconocidas, el historial y el botón Atrás en Android; los sensores y SQLite requieren dispositivo real. Navegación y estilos pueden revisarse en web sin simular persistencia SQLite.
+Las verificaciones de tipos, lint, build y Android fueron ejecutadas manualmente por el usuario. La validación integral confirmó las cuatro rutas, la navegación, el botón Atrás, la captura, el guardado, los listados, la persistencia y el funcionamiento sin conexión. Los sensores y SQLite requieren dispositivo real; navegación y estilos pueden revisarse en web sin simular persistencia SQLite.
 
-## 8. Primera tarea recomendada
+## 8. Cierre de la Fase 3 y siguiente etapa
 
-**Extraer la lógica de captura de `App.tsx` a `hooks/useSensorCapture.ts` conservando el comportamiento actual.** Extracción implementada; pendiente de verificaciones manuales y confirmación del usuario en Android antes de continuar con navegación.
+La Fase 3 está finalizada. La limpieza 3.9-A retiró `DatabaseTest`, `CaptureTest`, sus estilos exclusivos y `App.css`. La validación 3.9-B confirmó en Android el flujo completo de Entrenamiento y Predicción, la persistencia y el funcionamiento sin internet. No se modificó el esquema SQLite ni se implementó sincronización remota.
 
-Alcance acotado: mover responsabilidades de sensores y temporización, reutilizar tipos actuales y mantener `App.tsx` como interfaz de prueba. Sin Router, rediseño, cuenta regresiva ni guardado de capturas reales en esa primera extracción.
-
-Criterio de cierre: tipos/lint/build correctos y captura repetible de 10 segundos en Xiaomi 11T, métricas equivalentes al comportamiento previo, una sola suscripción activa y limpieza al desmontar. La frecuencia se mide; no se exige repetir exactamente 601 muestras ni 60.09 Hz.
+La siguiente etapa es la Fase 4 — Integración con FastAPI y MongoDB, pendiente de iniciar. `markAsSynced` seguirá reservado para confirmar la sincronización remota.

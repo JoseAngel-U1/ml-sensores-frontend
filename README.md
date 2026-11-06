@@ -19,7 +19,7 @@ El proyecto contempla la recolección de datos etiquetados, el almacenamiento lo
 - TypeScript (migración validada en Xiaomi 11T)
 - Vite
 - Capacitor
-- SQLite (integración inicial y persistencia validadas según confirmación del usuario)
+- SQLite (implementado y validado en Android)
 
 **Backend (planificado)**
 - Python
@@ -36,7 +36,7 @@ El proyecto contempla la recolección de datos etiquetados, el almacenamiento lo
 
 Actualmente se completó la prueba de concepto para acceder a los sensores de movimiento desde una aplicación Android desarrollada con React y Capacitor.
 
-La Fase 2 (TypeScript y almacenamiento SQLite) está completada. La Fase 3 está en planificación, con arquitectura aprobada para dos páginas —Entrenamiento y Predicción— y sus vistas internas Captura y Sincronizar; su implementación aún está pendiente.
+La Fase 2 (TypeScript y almacenamiento SQLite) está completada. La Fase 3 (interfaz, captura, guardado local y listados) está completada y validada en Android: dos páginas —Entrenamiento y Predicción— con sus vistas internas Captura y Sincronizar. La limpieza 3.9-A retiró las pruebas temporales y la validación integral 3.9-B confirmó ambos módulos. La Fase 4 — Integración con FastAPI y MongoDB queda como siguiente etapa pendiente.
 
 Resultados de una captura de prueba de 10 segundos:
 
@@ -50,15 +50,16 @@ Resultados de una captura de prueba de 10 segundos:
 
 Estos resultados corresponden a una prueba realizada en un Xiaomi 11T.
 
-## Funcionalidades planificadas
+## Funcionalidades
 
-- Recolección de sesiones etiquetadas para entrenamiento.
-- Captura de nuevas sesiones sin etiqueta para predicción.
-- Guardado de capturas reales mediante el servicio SQLite existente.
-- Sincronización manual con una API desarrollada en FastAPI.
-- Persistencia remota en MongoDB.
-- Entrenamiento y comparación de modelos de clasificación.
-- Predicción de nuevas sesiones mediante su identificador.
+- Recolección de sesiones etiquetadas para entrenamiento (implementada).
+- Captura de nuevas sesiones sin etiqueta para predicción (implementada).
+- Guardado de capturas reales mediante SQLite (implementado y validado en Android).
+- Listado local de registros por tipo (implementado y validado en Android).
+- Sincronización manual con una API desarrollada en FastAPI (Fase 4, pendiente).
+- Persistencia remota en MongoDB (Fase 4, pendiente).
+- Entrenamiento y comparación de modelos de clasificación (Fase 5, pendiente).
+- Predicción de nuevas sesiones mediante su identificador (Fase 5, pendiente).
 
 ## Ejecución del proyecto
 
@@ -105,11 +106,11 @@ La captura de sensores debe probarse en un dispositivo compatible; su funcionami
 
 ## Organización del proyecto
 
-El diseño aprobado de SQLite, la API de almacenamiento y el procedimiento de prueba manual están documentados en [docs/SQLITE_DESIGN.md](docs/SQLITE_DESIGN.md). La interfaz incluye una sección temporal de prueba con datos sintéticos, independiente de la captura de sensores.
+El diseño implementado de SQLite, la API de almacenamiento y la validación de persistencia están documentados en [docs/SQLITE_DESIGN.md](docs/SQLITE_DESIGN.md). Los registros se generan mediante capturas reales; la sección temporal de prueba con datos sintéticos fue retirada en 3.9-A.
 
-La arquitectura aprobada de páginas, rutas, componentes compartidos y tema claro de la Fase 3 está en [docs/UI_ARCHITECTURE.md](docs/UI_ARCHITECTURE.md). El avance y las tareas verificables se mantienen en `WORK_STATUS.md` y `ROADMAP.md`.
+La arquitectura implementada de páginas, rutas, componentes compartidos y tema claro de la Fase 3 está en [docs/UI_ARCHITECTURE.md](docs/UI_ARCHITECTURE.md). El avance y las tareas verificables se mantienen en `WORK_STATUS.md` y `ROADMAP.md`.
 
-El proyecto se encuentra en desarrollo. Su estructura se ampliará conforme se implementen los módulos de captura, persistencia local y sincronización.
+El proyecto se encuentra en desarrollo. La captura, el almacenamiento local y los listados están completos; la siguiente etapa es la integración con FastAPI y MongoDB.
 
 ## Propósito académico
 
