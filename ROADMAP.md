@@ -49,7 +49,7 @@ Las verificaciones de tipos, lint, build y Android de cada tarea fueron ejecutad
 
 ## Fase 4 — Integración con FastAPI y MongoDB
 
-**Estado: En preparación — Fase 5-B completada y validada por el usuario; siguiente etapa: Fase 5-C, conectividad HTTPS con FastAPI en Render. Sincronización HTTP pendiente.**
+**Estado: En preparación — Fases 5-B y 5-C completadas y validadas por el usuario en Android. Sincronización HTTP pendiente.**
 
 La Fase 3 quedó finalizada; la sincronización remota y la integración con el backend se abordarán en esta fase.
 
@@ -64,9 +64,17 @@ Implementación en código: tabla `participantes`, secuencia persistente, migrac
 
 **Estado de Fase 5-B: Completada y validada por el usuario.** El procedimiento detallado de `docs/PARTICIPANTS_VALIDATION.md` se conserva como referencia de regresión; la confirmación global no se registra como ejecución individual de sus doce casos.
 
-### Siguiente etapa — Fase 5-C
+### Fase 5-C — Prueba manual de conectividad HTTPS
 
-**Conectividad HTTPS entre Android y FastAPI desplegada en Render: pendiente.** La numeración 5-B/5-C corresponde a las tareas coordinadas con el backend, dentro de la Fase 4 histórica del frontend. No reemplaza la Fase 5 de Machine Learning que figura más adelante. La sincronización HTTP continúa pendiente.
+**Completada y validada por el usuario en Xiaomi 11T.** La prueba HTTPS mediante `CapacitorHttp` contra `https://ml-sensores-api.onrender.com/openapi.json` devolvió HTTP 200, verificó las rutas esperadas y registró **32669 ms** de respuesta. Servidor: Render. No se enviaron capturas.
+
+- [x] Validar HTTP 200 y rutas esperadas desde Xiaomi 11T, según confirmación del usuario.
+- [x] Retirar botón temporal, estilos exclusivos y hook de diagnóstico sin consumidores.
+- [x] Conservar configuración HTTPS, `.env.example` y servicio HTTP reutilizable con errores y timeouts.
+
+No se atribuyen resultados individuales a typecheck/lint/build, pruebas sin conexión, timeout o comparación Wi-Fi/datos móviles que no hayan sido confirmados. La limpieza del diagnóstico se revisó estáticamente.
+
+La numeración 5-B/5-C corresponde a las tareas coordinadas con el backend, dentro de la Fase 4 histórica del frontend. No reemplaza la Fase 5 de Machine Learning que figura más adelante. La sincronización HTTP continúa pendiente de implementación en una tarea posterior.
 
 ### Plan histórico de integración
 

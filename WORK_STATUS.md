@@ -2,15 +2,46 @@
 
 ## Estado general
 
-**Etapa actual:** Fase 5-B — Gestión de participantes, completada y validada por el usuario en Xiaomi 11T. Corresponde a la preparación de la Fase 4 histórica del frontend; se conserva la numeración coordinada con el backend.
+**Etapa actual:** Fase 5-C — Conectividad HTTPS, completada y validada por el usuario en Xiaomi 11T. Corresponde a la preparación de la Fase 4 histórica del frontend; se conserva la numeración coordinada con el backend.
 
-**Estado de la tarea:** El usuario confirmó `npm run typecheck`, `npm run lint` y `npm run build` correctos, la compilación y ejecución en Android, el funcionamiento de participantes y la aprobación del rediseño del selector. La sincronización HTTP continúa pendiente. Las validaciones de Fase 3 que siguen son históricas.
+**Estado de la tarea:** Comunicación HTTPS con Render confirmada: HTTP 200, rutas esperadas verificadas y tiempo de respuesta de 32669 ms. Se retiraron el botón temporal, sus estilos y el hook de diagnóstico; la infraestructura HTTP permanece disponible. La Fase 5-B permanece completada y validada. La sincronización HTTP continúa pendiente.
 
-**Siguiente etapa:** Fase 5-C — Conectividad HTTPS entre Android y FastAPI desplegada en Render, pendiente.
+**Siguiente acción:** abordar la sincronización de registros en una tarea posterior; no se implementa durante este cierre.
 
 > Nota: las referencias a `DatabaseTest` y `CaptureTest` en secciones históricas describen etapas anteriores. Ambos componentes fueron eliminados en la tarea 3.9-A y no forman parte del estado actual.
 
 ## Trabajo completado
+
+### Fase 5-C — Completada y validada por el usuario
+
+- `.env.example` y `src/config/api.ts`: URL base `https://ml-sensores-api.onrender.com`, configurable con `VITE_API_BASE_URL` y usada por defecto si la variable no existe. Validación HTTPS sin credenciales, query ni fragmentos; construcción de rutas con `URL`.
+- `src/services/api.ts`: solicitudes explícitas de `CapacitorHttp`, estructura GET/POST reutilizable sin consumidores de sincronización. No activa el parche global de fetch. Tras retirar el diagnóstico, la comprobación GET ya no está conectada a la interfaz.
+- `checkApiConnectivity()`: requiere HTTP 200, JSON, campos básicos OpenAPI 3 (`openapi`, `info`, `paths`) y las operaciones GET/POST de entrenamiento y predicción, más GET por ID. Es una validación estructural acotada, no un validador completo de la especificación OpenAPI.
+- Medición con `performance.now()` hasta la recepción de la respuesta, antes de validarla. Errores HTTP incluyen código; errores de red y timeout muestran descripción, sin exponer el documento completo.
+- Se conservan el límite de espera de 60 segundos y los timeouts de conexión/lectura nativos de 60 segundos. Se deshabilitan redirecciones automáticas. En web se utiliza AbortController; la API nativa no ofrece cancelación directa. El servicio conserva el bloqueo de nuevas solicitudes mientras la operación nativa siga pendiente.
+- `src/hooks/useApiConnectivity.ts`: eliminado tras confirmar que el header era su único consumidor. Las alertas del diagnóstico temporal ya no forman parte de la interfaz.
+- `src/shared/Header.tsx` y `src/index.css`: retirados únicamente el botón de conexión y su clase exclusiva `.app-header__connection`; se conservan el título, la marca y los demás elementos del encabezado.
+- Sin cambios en SQLite, participantes, sensores, configuración nativa o backend. No se instalaron dependencias ni se hicieron peticiones al servidor durante la implementación.
+
+**Validación confirmada por el usuario:** Xiaomi 11T, servidor Render, URL `https://ml-sensores-api.onrender.com`, respuesta HTTP 200, rutas esperadas verificadas, tiempo **32669 ms**. Confirma comunicación Android → FastAPI por HTTPS mediante CapacitorHttp. La Fase 5-C queda completada.
+
+**Revisión del cierre:** limpieza del header y búsqueda estática de consumidores del hook y estilos exclusivos. El agente no ejecutó comandos ni pruebas; no se atribuyen resultados de compilación posteriores a esta limpieza.
+
+**Comandos de referencia para verificar la limpieza**, desde `ml-sensores/`, continuando solo si cada paso termina correctamente:
+
+```bash
+npm run typecheck
+npm run lint
+npm run build
+npx cap sync android
+npx cap open android
+```
+
+La URL predeterminada permite probar sin crear `.env`; para cambiarla, usar `.env.example` como plantilla y recompilar. Las variables `VITE_*` son públicas, no deben contener secretos.
+
+**Alcance de la confirmación:** se registra la prueba exitosa de conectividad reportada. No se dan por ejecutadas individualmente pruebas de modo avión, recuperación de conexión, pulsaciones repetidas, timeout o comparación Wi-Fi/datos móviles. El botón usado para la prueba ya fue retirado; la configuración, el servicio y `.env.example` se conservan sin cambios en este cierre.
+
+**Limitaciones:** CORS aplica al navegador, no al transporte HTTP nativo de Android. Un servicio Render suspendido puede demorar la primera respuesta. La consulta OpenAPI verifica conectividad y estructura publicada, no el funcionamiento de MongoDB ni una validación exhaustiva del documento. La sincronización queda pendiente de una tarea posterior.
 
 ### Fase 5-B — Completada y validada por el usuario
 
@@ -508,4 +539,4 @@ La Fase 3 — Interfaz y captura queda finalizada. Las tareas 3.1 a 3.9 están c
 
 ## Siguiente etapa — Fase 4: Integración con FastAPI y MongoDB
 
-**Sincronización HTTP pendiente.** La Fase 5-B de participantes locales está completada y validada por el usuario. La siguiente etapa es la **Fase 5-C — Conectividad HTTPS entre Android y FastAPI desplegada en Render**, dentro de la Fase 4 histórica del frontend. Después podrá abordarse la sincronización manual y los reintentos. `markAsSynced` permanece reservado para confirmar la sincronización remota. Las capturas antiguas de entrenamiento sin participante se conservan; su asociación posterior no se implementó en esta tarea.
+**Sincronización HTTP pendiente.** Las Fases 5-B y 5-C están completadas y validadas por el usuario, dentro de la Fase 4 histórica del frontend. El diagnóstico temporal de conectividad fue retirado y la infraestructura HTTP se conserva. Después podrá abordarse la sincronización manual y los reintentos. `markAsSynced` permanece reservado para confirmar la sincronización remota. Las capturas antiguas de entrenamiento sin participante se conservan; su asociación posterior no se implementó en esta tarea.
