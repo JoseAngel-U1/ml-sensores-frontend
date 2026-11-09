@@ -5,6 +5,11 @@ export type TipoRegistro = "entrenamiento" | "prediccion";
 export type EstadoSync = "pendiente" | "sincronizado";
 export type EstadoGuardadoCaptura = "inactivo" | "guardando" | "guardado" | "incompleta" | "error";
 
+export interface Participante {
+  id: number;
+  codigo: string;
+}
+
 /**
  ** La persistencia exige los seis ejes numéricos finitos, por lo que reutiliza
  ** la variante completa de la medición de sensores en lugar de la que admite null.
@@ -23,6 +28,8 @@ export interface Registro {
   tipo: TipoRegistro;
   //* Etiqueta de entrenamiento o null para una sesión destinada a predicción.
   actividad: Actividad | null;
+  //* Solo entrenamiento; null/ausente se conserva para capturas anteriores a v2.
+  participante_id?: string | null;
   //* Fecha ISO 8601 UTC canónica, generada con Date.toISOString().
   fecha: string;
   //* Duración de la sesión en milisegundos; debe ser finita y positiva.

@@ -554,6 +554,52 @@ pre {
   }
 }
 
+.participant-selector {
+  display: grid;
+  gap: var(--space-sm);
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+}
+
+.participant-selector__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px 44px;
+  align-items: center;
+  gap: var(--space-xs);
+  min-width: 0;
+}
+
+.participant-selector__row select {
+  width: 100%;
+  min-width: 0;
+  height: 44px;
+  min-height: 44px;
+}
+
+.participant-selector__button {
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+}
+
+.participant-selector__button svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.participant-selector__row select:disabled {
+  background: var(--color-background);
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+}
+
 .activity-selector {
   width: 100%;
   min-width: 0;

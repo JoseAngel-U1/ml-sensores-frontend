@@ -2,13 +2,33 @@
 
 ## Estado general
 
-**Etapa actual:** Fase 3 — Interfaz y captura, finalizada. Tareas 3.1 a 3.9 completadas y validadas; siguiente etapa: Fase 4 — Integración con FastAPI y MongoDB, pendiente de iniciar. Fases 1 y 2 completadas.
+**Etapa actual:** Fase 5-B — Gestión de participantes, completada y validada por el usuario en Xiaomi 11T. Corresponde a la preparación de la Fase 4 histórica del frontend; se conserva la numeración coordinada con el backend.
 
-**Estado de la tarea:** 3.9 — Validación integral en Android completada y validada por el usuario. La limpieza 3.9-A retiró `DatabaseTest`, `CaptureTest`, sus estilos exclusivos y `App.css`. La validación 3.9-B confirmó Entrenamiento y Predicción de extremo a extremo: captura, guardado SQLite, listados, persistencia, navegación y funcionamiento sin internet. Se conservaron los registros existentes, no se modificó el esquema SQLite y no se implementó sincronización remota. La Fase 3 queda finalizada.
+**Estado de la tarea:** El usuario confirmó `npm run typecheck`, `npm run lint` y `npm run build` correctos, la compilación y ejecución en Android, el funcionamiento de participantes y la aprobación del rediseño del selector. La sincronización HTTP continúa pendiente. Las validaciones de Fase 3 que siguen son históricas.
+
+**Siguiente etapa:** Fase 5-C — Conectividad HTTPS entre Android y FastAPI desplegada en Render, pendiente.
 
 > Nota: las referencias a `DatabaseTest` y `CaptureTest` en secciones históricas describen etapas anteriores. Ambos componentes fueron eliminados en la tarea 3.9-A y no forman parte del estado actual.
 
 ## Trabajo completado
+
+### Fase 5-B — Completada y validada por el usuario
+
+- `src/services/database.ts`: migración transaccional explícita desde `user_version` 0/1 a 2; tabla `participantes`, referencia nullable en registros, índice y triggers. La migración no cambia UUID, sensores ni estados; las capturas históricas conservan NULL.
+- Códigos P-001 a P-999 mediante AUTOINCREMENT y `sqlite_sequence`, sin reutilización al eliminar. Vista previa sin reserva y asignación definitiva en una sola sentencia de inserción. Límite de tres dígitos para compatibilidad con FastAPI.
+- Operaciones `getParticipants`, `getNextParticipantCode`, `createParticipant` y `deleteParticipant`, reutilizando la conexión y cola existentes. Eliminación condicionada a ausencia de capturas y FK `ON DELETE RESTRICT`.
+- `src/hooks/useParticipants.ts` y `ParticipantSelector.tsx`: consulta, selección, alta/baja con confirmación, estados de error/vacío y bloqueo de operaciones repetidas.
+- `TrainingPage.tsx`: no inicia sin participante; fija participante y actividad al iniciar. `useCaptureSave` conserva ambos, junto con el UUID, para el guardado y reintento. No incluye `participante_id` en objetos de predicción.
+- `RecordCard.tsx`: muestra participante en entrenamiento o identifica una captura histórica sin participante.
+- Se conserva `useSensorCapture.ts`, la duración de captura y el módulo de predicción. No hay nuevas dependencias ni cambios en el backend.
+
+**Verificación del agente durante la implementación:** revisión estática de los cambios y de las firmas/implementación del plugin SQLite instalado, incluida su separación de sentencias y manejo de triggers. El agente no ejecutó comandos ni pruebas.
+
+**Validación confirmada por el usuario:** typecheck, lint y build correctos; aplicación compilada y ejecutada en Xiaomi 11T; gestión de participantes funcionando y selector rediseñado probado y aprobado. La Fase 5-B queda cerrada. No se atribuye ejecución individual a los doce casos de `docs/PARTICIPANTS_VALIDATION.md` ni una comprobación específica de migración sobre datos antiguos sin resultados detallados.
+
+**Diseño y mensajes aprobados:** selector horizontal con un desplegable nativo y dos botones de iconos (+ y papelera), ubicado entre `CaptureClock` y `ActivitySelector`. Las confirmaciones de agregar y eliminar continúan usando `window.confirm`. Se mantienen los mensajes y el reintento existentes; no se implementarán notificaciones toast por ahora.
+
+### Histórico de fases anteriores
 
 - Proyecto inicial creado con React y Vite.
 - Capacitor configurado para Android.
@@ -488,4 +508,4 @@ La Fase 3 — Interfaz y captura queda finalizada. Las tareas 3.1 a 3.9 están c
 
 ## Siguiente etapa — Fase 4: Integración con FastAPI y MongoDB
 
-**Pendiente de iniciar.** La integración con el backend, la sincronización manual, la prevención de duplicados y la comprobación del funcionamiento sin conexión se abordarán en la Fase 4. `markAsSynced` permanece reservado para confirmar la sincronización remota.
+**Sincronización HTTP pendiente.** La Fase 5-B de participantes locales está completada y validada por el usuario. La siguiente etapa es la **Fase 5-C — Conectividad HTTPS entre Android y FastAPI desplegada en Render**, dentro de la Fase 4 histórica del frontend. Después podrá abordarse la sincronización manual y los reintentos. `markAsSynced` permanece reservado para confirmar la sincronización remota. Las capturas antiguas de entrenamiento sin participante se conservan; su asociación posterior no se implementó en esta tarea.

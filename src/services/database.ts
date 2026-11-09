@@ -1,11 +1,12 @@
 import { Capacitor } from "@capacitor/core";
 import { CapacitorSQLite, SQLiteConnection } from "@capacitor-community/sqlite";
 import type { SQLiteDBConnection } from "@capacitor-community/sqlite";
-import type { Medicion, Registro, RegistroResumen, TipoRegistro } from "../types/records";
+import type { Medicion, Participante, Registro, RegistroResumen, TipoRegistro } from "../types/records";
 
 // El gestor del plugin se comparte entre los consumidores de este módulo.
 // La base reside en el almacenamiento privado de Android, no en el estado de React.
 const DATABASE_NAME = "ml_sensores";
+const DATABASE_VERSION = 2;
 const sqlite = new SQLiteConnection(CapacitorSQLite);
 // Conserva tanto la apertura en curso como su resultado para compartir la conexión.
 let initialization: Promise<SQLiteDBConnection> | null = null;
@@ -44,6 +45,51 @@ CREATE INDEX IF NOT EXISTS idx_registros_estado
 ON registros (estado_sync);
 `;
 
+// user_version se actualiza en la misma transacción que el esquema. Las bases
+// antiguas pueden declarar 0: la versión de conexión del plugin no la fijaba.
+const MIGRATION_V2 = `
+${SCHEMA}
+CREATE TABLE participantes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    codigo TEXT NOT NULL UNIQUE
+        CHECK (codigo GLOB 'P-[0-9][0-9][0-9]' AND id BETWEEN 1 AND 999)
+);
+ALTER TABLE registros ADD COLUMN participante_id TEXT
+    REFERENCES participantes(codigo) ON DELETE RESTRICT;
+CREATE INDEX idx_registros_participante ON registros (participante_id);
+CREATE TRIGGER registros_participante_insert
+BEFORE INSERT ON registros
+BEGIN
+    SELECT RAISE(ABORT, 'Participante incompatible con el tipo de captura')
+    WHERE (NEW.tipo = 'entrenamiento' AND
+        (NEW.participante_id IS NULL OR NOT EXISTS
+            (SELECT 1 FROM participantes WHERE codigo = NEW.participante_id)))
+        OR (NEW.tipo = 'prediccion' AND NEW.participante_id IS NOT NULL);
+END;
+CREATE TRIGGER registros_participante_update
+BEFORE UPDATE OF participante_id, tipo ON registros
+BEGIN
+    SELECT RAISE(ABORT, 'Participante incompatible con el tipo de captura')
+    WHERE (NEW.tipo = 'entrenamiento' AND
+        (NEW.participante_id IS NULL OR NOT EXISTS
+            (SELECT 1 FROM participantes WHERE codigo = NEW.participante_id)))
+        OR (NEW.tipo = 'prediccion' AND NEW.participante_id IS NOT NULL);
+END;
+PRAGMA user_version = 2;
+`;
+
+async function migrateDatabase(db: SQLiteDBConnection): Promise<void> {
+  const { version } = await db.getVersion();
+  if (version === 0 || version === 1) {
+    await db.execute(MIGRATION_V2, true);
+  } else if (version !== DATABASE_VERSION) {
+    throw new Error(`Versión SQLite no compatible: ${version}.`);
+  }
+  if ((await db.getVersion()).version !== DATABASE_VERSION) {
+    throw new Error("No se pudo confirmar la migración SQLite a versión 2.");
+  }
+}
+
 // Los rechazos del plugin pueden no ser instancias de Error. Se normaliza el
 // mensaje para la interfaz y se conserva la causa original para el diagnóstico.
 function contextualError(message: string, cause: unknown): Error {
@@ -64,16 +110,17 @@ async function openDatabase(): Promise<SQLiteDBConnection> {
   // Reconcilia conexiones nativas, incluso después de recargar el WebView.
   await sqlite.checkConnectionsConsistency();
   const exists = await sqlite.isConnection(DATABASE_NAME, false);
-  // Reutiliza la conexión registrada o crea una de lectura/escritura, sin cifrado,
-  // con versión de esquema 1. El argumento readonly es false en ambos caminos.
+  // Reutiliza la conexión registrada o crea una de lectura/escritura, sin cifrado.
+  // La migración explícita también cubre conexiones recuperadas del WebView.
   const db = exists.result
     ? await sqlite.retrieveConnection(DATABASE_NAME, false)
-    : await sqlite.createConnection(DATABASE_NAME, false, "no-encryption", 1, false);
+    : await sqlite.createConnection(DATABASE_NAME, false, "no-encryption", DATABASE_VERSION, false);
 
   // Tener una conexión registrada no implica que la base esté abierta.
   // La creación de tabla e índice debe terminar antes de entregar la conexión.
   if (!(await db.isDBOpen()).result) await db.open();
-  await db.execute(SCHEMA);
+  await db.execute("PRAGMA foreign_keys = ON;", false);
+  await migrateDatabase(db);
   return db;
 }
 
@@ -151,6 +198,12 @@ function validateRecordMetadata(value: Record<string, unknown>): void {
     || (value.tipo === "prediccion" && value.actividad === null))) {
     throw new Error("Un entrenamiento requiere actividad; una predicción requiere actividad nula.");
   }
+  if (value.tipo === "prediccion" && value.participante_id != null) {
+    throw new Error("Una predicción no admite participante.");
+  }
+  if (value.participante_id != null && !isParticipantCode(value.participante_id)) {
+    throw new Error("El código de participante debe tener formato P-001.");
+  }
   // Formato ISO 8601 UTC canónico generado por Date.toISOString().
   if (typeof value.fecha !== "string" || !Number.isFinite(Date.parse(value.fecha))
     || new Date(value.fecha).toISOString() !== value.fecha) {
@@ -199,6 +252,7 @@ function decodeRecord(row: unknown): Registro {
   const mediciones: unknown = JSON.parse(row.mediciones);
   const record: unknown = { ...row, mediciones };
   validateRecord(record);
+  if (record.tipo === "prediccion") delete record.participante_id;
   return record;
 }
 
@@ -212,6 +266,7 @@ function decodeRecordSummary(row: unknown): RegistroResumen {
     id: row.id,
     tipo: row.tipo,
     actividad: row.actividad,
+    ...(row.tipo === "entrenamiento" ? { participante_id: row.participante_id ?? null } : {}),
     fecha: row.fecha,
     duracion_ms: row.duracion_ms,
     frecuencia_hz: row.frecuencia_hz,
@@ -237,10 +292,17 @@ export async function saveRecord(registro: Registro): Promise<void> {
     if (registro.estado_sync !== "pendiente") {
       throw new Error("Todo registro nuevo debe comenzar pendiente.");
     }
+    if (registro.tipo === "entrenamiento" && !isParticipantCode(registro.participante_id)) {
+      throw new Error("Selecciona un participante para guardar una nueva captura de entrenamiento.");
+    }
+    if (registro.tipo === "prediccion" && "participante_id" in registro) {
+      throw new Error("No incluyas participante_id en una captura de predicción.");
+    }
     // El JSON fija el contenido de las mediciones antes de esperar en la cola;
     // modificaciones posteriores del objeto recibido no alteran esta escritura.
     values = [registro.id, registro.tipo, registro.actividad, registro.fecha,
-    registro.duracion_ms, registro.frecuencia_hz, JSON.stringify(registro.mediciones), "pendiente"];
+     registro.duracion_ms, registro.frecuencia_hz, JSON.stringify(registro.mediciones), "pendiente",
+     registro.tipo === "entrenamiento" ? registro.participante_id ?? null : null];
   } catch (cause: unknown) {
     throw contextualError("No se pudo validar el registro para guardarlo", cause);
   }
@@ -249,8 +311,8 @@ export async function saveRecord(registro: Registro): Promise<void> {
     // transacción del plugin; guardar no depende de un evento de cierre de la app.
     // INSERT normal: un UUID duplicado produce error, nunca sobrescribe datos.
     await db.run(`INSERT INTO registros
-      (id, tipo, actividad, fecha, duracion_ms, frecuencia_hz, mediciones, estado_sync)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, values);
+      (id, tipo, actividad, fecha, duracion_ms, frecuencia_hz, mediciones, estado_sync, participante_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, values);
   });
 }
 
@@ -268,7 +330,7 @@ function queryRecords(statement: string, values: string[] = []): Promise<Registr
 
 function queryRecordSummaries(tipo: TipoRegistro): Promise<RegistroResumen[]> {
   return withDatabase("No se pudieron consultar los resúmenes de registros", async (db) => {
-    const result = await db.query(`SELECT id, tipo, actividad, fecha, duracion_ms,
+    const result = await db.query(`SELECT id, tipo, actividad, participante_id, fecha, duracion_ms,
       frecuencia_hz, estado_sync, json_array_length(mediciones) AS total_mediciones
       FROM registros
       WHERE tipo = ?
@@ -324,5 +386,67 @@ export async function markAsSynced(id: string): Promise<void> {
   await withDatabase("No se pudo marcar el registro como sincronizado", async (db) => {
     const result = await db.run("UPDATE registros SET estado_sync = ? WHERE id = ?", ["sincronizado", id]);
     if (result.changes?.changes !== 1) throw new Error(`No existe el registro ${id}.`);
+  });
+}
+
+function isParticipantCode(value: unknown): value is string {
+  return typeof value === "string" && /^P-\d{3}$/.test(value) && value !== "P-000";
+}
+
+function decodeParticipant(row: unknown): Participante {
+  if (!isObject(row) || !isFiniteNumber(row.id) || !Number.isInteger(row.id)
+    || row.id < 1 || row.id > 999 || !isParticipantCode(row.codigo)
+    || row.codigo !== `P-${String(row.id).padStart(3, "0")}`) {
+    throw new Error("Participante SQLite inválido.");
+  }
+  return { id: row.id, codigo: row.codigo };
+}
+
+export function getParticipants(): Promise<Participante[]> {
+  return withDatabase("No se pudieron consultar los participantes", async (db) => {
+    const result = await db.query("SELECT id, codigo FROM participantes ORDER BY id ASC");
+    const rows: unknown = result.values;
+    if (!Array.isArray(rows)) throw new Error("SQLite no devolvió una lista de participantes.");
+    return rows.map((row: unknown) => decodeParticipant(row));
+  });
+}
+
+export function getNextParticipantCode(): Promise<string> {
+  return withDatabase("No se pudo consultar el próximo código", async (db) => {
+    const result = await db.query("SELECT COALESCE((SELECT seq FROM sqlite_sequence WHERE name = 'participantes'), 0) + 1 AS siguiente");
+    const rows: unknown = result.values;
+    const row: unknown = Array.isArray(rows) ? rows[0] : undefined;
+    if (!isObject(row) || !isFiniteNumber(row.siguiente) || !Number.isInteger(row.siguiente)
+      || row.siguiente < 1 || row.siguiente > 999) {
+      throw new Error("No hay códigos disponibles dentro del formato P-001 a P-999.");
+    }
+    return `P-${String(row.siguiente).padStart(3, "0")}`;
+  });
+}
+
+export function createParticipant(): Promise<Participante> {
+  return withDatabase("No se pudo crear el participante", async (db) => {
+    // Una sola sentencia asigna código e id bajo el bloqueo de escritura SQLite.
+    // AUTOINCREMENT conserva sqlite_sequence incluso al eliminar la última fila.
+    const result = await db.run(`INSERT INTO participantes (codigo)
+      SELECT printf('P-%03d', COALESCE((SELECT seq FROM sqlite_sequence
+      WHERE name = 'participantes'), 0) + 1)
+      WHERE COALESCE((SELECT seq FROM sqlite_sequence WHERE name = 'participantes'), 0) < 999`);
+    const id = result.changes?.lastId;
+    if (result.changes?.changes !== 1 || typeof id !== "number") {
+      throw new Error("No hay códigos disponibles dentro del formato P-001 a P-999.");
+    }
+    return decodeParticipant({ id, codigo: `P-${String(id).padStart(3, "0")}` });
+  });
+}
+
+export function deleteParticipant(codigo: string): Promise<void> {
+  return withDatabase("No se pudo eliminar el participante", async (db) => {
+    if (!isParticipantCode(codigo)) throw new Error("Código de participante inválido.");
+    const result = await db.run(`DELETE FROM participantes WHERE codigo = ?
+      AND NOT EXISTS (SELECT 1 FROM registros WHERE participante_id = ?)`, [codigo, codigo]);
+    if (result.changes?.changes !== 1) {
+      throw new Error("El participante tiene capturas asociadas o ya no existe. No se eliminó ningún registro.");
+    }
   });
 }

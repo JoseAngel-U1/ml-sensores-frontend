@@ -8,11 +8,12 @@ interface CapturaPendiente {
   fecha: string;
   tipo: TipoRegistro;
   actividad: Actividad | null;
+  participanteId: string | null;
   resultado: ResultadoCaptura;
 }
 
 type UseCaptureSaveOptions =
-  | { tipo: "entrenamiento"; actividad: Actividad; resultado: ResultadoCaptura | null }
+  | { tipo: "entrenamiento"; actividad: Actividad; participanteId: string | null; resultado: ResultadoCaptura | null }
   | { tipo: "prediccion"; actividad: null; resultado: ResultadoCaptura | null };
 
 interface UseCaptureSaveResult {
@@ -28,17 +29,16 @@ function esMismoRegistro(guardado: Registro, esperado: Registro): boolean {
   return guardado.id === esperado.id
     && guardado.tipo === esperado.tipo
     && guardado.actividad === esperado.actividad
+    && guardado.participante_id === esperado.participante_id
     && guardado.fecha === esperado.fecha
     && guardado.duracion_ms === esperado.duracion_ms
     && guardado.frecuencia_hz === esperado.frecuencia_hz
     && JSON.stringify(guardado.mediciones) === JSON.stringify(esperado.mediciones);
 }
 
-export function useCaptureSave({
-  tipo,
-  actividad,
-  resultado,
-}: UseCaptureSaveOptions): UseCaptureSaveResult {
+export function useCaptureSave(options: UseCaptureSaveOptions): UseCaptureSaveResult {
+  const { tipo, actividad, resultado } = options;
+  const participanteId = options.tipo === "entrenamiento" ? options.participanteId : null;
   const [estadoGuardado, setEstadoGuardado] = useState<EstadoGuardadoCaptura>("inactivo");
   const [mensajeGuardado, setMensajeGuardado] = useState<string | null>(null);
   const [errorGuardado, setErrorGuardado] = useState<string | null>(null);
@@ -67,6 +67,7 @@ export function useCaptureSave({
       id: pendiente.id,
       tipo: pendiente.tipo,
       actividad: pendiente.actividad,
+      ...(pendiente.tipo === "entrenamiento" ? { participante_id: pendiente.participanteId } : {}),
       fecha: pendiente.fecha,
       duracion_ms: pendiente.resultado.duracion_ms,
       frecuencia_hz: pendiente.resultado.frecuencia_hz,
@@ -108,6 +109,13 @@ export function useCaptureSave({
     queueMicrotask(() => {
       if (!montadoRef.current) return;
 
+      if (tipo === "entrenamiento" && !participanteId) {
+        pendienteRef.current = null;
+        setEstadoGuardado("incompleta");
+        setMensajeGuardado("Captura no guardada: falta el participante seleccionado al iniciar.");
+        return;
+      }
+
       const sinMedicionesValidas = resultado.medicionesCompletas.length === 0;
       const metricasInvalidas = !Number.isFinite(resultado.duracion_ms)
         || resultado.duracion_ms <= 0
@@ -131,12 +139,13 @@ export function useCaptureSave({
         fecha: new Date().toISOString(),
         tipo,
         actividad,
+        participanteId,
         resultado,
       };
       pendienteRef.current = pendiente;
       void guardarCaptura(pendiente);
     });
-  }, [resultado, tipo, actividad, guardarCaptura]);
+  }, [resultado, tipo, actividad, participanteId, guardarCaptura]);
 
   const reiniciarGuardado = useCallback((): boolean => {
     if (guardandoRef.current) return false;

@@ -30,7 +30,7 @@ Resultado de referencia: 601 mediciones válidas en 10 segundos, con frecuencia 
 
 ## Fase 3 — Interfaz y captura
 
-**Estado: Completada — tareas 3.1 a 3.9 completadas y validadas; Fase 3 finalizada. Siguiente etapa: Fase 4 — Integración con FastAPI y MongoDB, pendiente de iniciar**
+**Estado: Completada — tareas 3.1 a 3.9 completadas y validadas. La preparación de Fase 4 incorpora participantes locales en Fase 5-B, completada y validada por el usuario; la sincronización HTTP sigue pendiente.**
 
 Referencia: [docs/UI_ARCHITECTURE.md](docs/UI_ARCHITECTURE.md). Solo dos páginas principales (`TrainingPage` y `PredictionPage`), cada una con vistas internas Captura y Sincronizar. Rutas aprobadas: `/entrenamiento`, `/entrenamiento/sincronizar`, `/prediccion` y `/prediccion/sincronizar`. `App.tsx` define las rutas y redirige las desconocidas a `/entrenamiento`; `AppLayout` comparte encabezado, navegación inferior y contenido activo.
 
@@ -49,9 +49,26 @@ Las verificaciones de tipos, lint, build y Android de cada tarea fueron ejecutad
 
 ## Fase 4 — Integración con FastAPI y MongoDB
 
-**Estado: Pendiente — siguiente etapa, no iniciada**
+**Estado: En preparación — Fase 5-B completada y validada por el usuario; siguiente etapa: Fase 5-C, conectividad HTTPS con FastAPI en Render. Sincronización HTTP pendiente.**
 
 La Fase 3 quedó finalizada; la sincronización remota y la integración con el backend se abordarán en esta fase.
+
+### Fase 5-B — Participantes locales (numeración coordinada con el backend)
+
+Implementación en código: tabla `participantes`, secuencia persistente, migración SQLite v2, selector con confirmaciones y asociación fija a nuevas capturas de entrenamiento. Se conservan las capturas antiguas sin participante. No se implementó HTTP.
+
+- [x] Typecheck, lint y build correctos, confirmados por el usuario.
+- [x] Aplicación compilada y ejecutada en Xiaomi 11T; gestión de participantes validada por el usuario.
+- [x] Rediseño del selector probado y aprobado: una fila horizontal con desplegable y botones de iconos + y papelera.
+- [x] Conservar confirmaciones de creación y eliminación mediante `window.confirm`; no implementar toast por ahora.
+
+**Estado de Fase 5-B: Completada y validada por el usuario.** El procedimiento detallado de `docs/PARTICIPANTS_VALIDATION.md` se conserva como referencia de regresión; la confirmación global no se registra como ejecución individual de sus doce casos.
+
+### Siguiente etapa — Fase 5-C
+
+**Conectividad HTTPS entre Android y FastAPI desplegada en Render: pendiente.** La numeración 5-B/5-C corresponde a las tareas coordinadas con el backend, dentro de la Fase 4 histórica del frontend. No reemplaza la Fase 5 de Machine Learning que figura más adelante. La sincronización HTTP continúa pendiente.
+
+### Plan histórico de integración
 
 - [ ] Crear API con FastAPI.
 - [ ] Configurar MongoDB.

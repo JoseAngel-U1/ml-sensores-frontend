@@ -51,6 +51,12 @@ export default function RecordCard({ registro }: RecordCardProps) {
       </header>
 
       <dl className="record-card__metrics">
+        {registro.tipo === "entrenamiento" && (
+          <div className="record-card__metric">
+            <dt>Participante</dt>
+            <dd>{registro.participante_id ?? "Sin participante (captura anterior)"}</dd>
+          </div>
+        )}
         <div className="record-card__metric">
           <dt>Fecha</dt>
           <dd><time dateTime={registro.fecha}>{formatearFecha(registro.fecha)}</time></dd>
