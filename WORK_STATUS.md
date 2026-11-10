@@ -13,6 +13,7 @@
 - React + TypeScript + Capacitor Android.
 - Captura de acelerómetro y giroscopio para registros de Entrenamiento y Predicción.
 - Gestión de participantes y persistencia local SQLite.
+- Orientación vertical bloqueada de forma nativa en `AndroidManifest.xml`; validada por el usuario en Xiaomi 11T.
 
 ### Sincronización actual
 
@@ -29,6 +30,7 @@
 - `npm run typecheck`, `npm run lint` y `npm run build`: satisfactorios.
 - Sincronización de Entrenamiento y Predicción probada en Xiaomi 11T.
 - Almacenamiento de registros en MongoDB verificado.
+- Orientación vertical bloqueada validada en Xiaomi 11T.
 - Fase 5-D.3 validada y cerrada. No se añaden fechas, versiones ni resultados individuales de pruebas no informados.
 
 ### Pendientes actuales
@@ -47,6 +49,12 @@ Un registro SQLite corrupto podría interrumpir la consulta del módulo durante 
 Las descripciones de restricciones y funcionalidades aún pendientes dentro de etapas anteriores corresponden a ese momento histórico; el estado vigente es el resumen anterior y el cierre de 5-D.3.
 
 ## Trabajo completado
+
+### Corrección 1 — Orientación vertical (completada y validada en Android)
+
+- `android/app/src/main/AndroidManifest.xml`: añadido `android:screenOrientation="portrait"` a la actividad principal `.MainActivity`.
+- Se conserva `android:configChanges` y el resto de la configuración nativa. No se modificó `MainActivity.java`, Capacitor, sensores, SQLite, FastAPI ni MongoDB.
+- Validación confirmada por el usuario en Xiaomi 11T: la aplicación permanece vertical al girar el dispositivo. La corrección queda completada y validada.
 
 ### Fase 5-D.3 — Completada y validada en Android
 

@@ -134,6 +134,13 @@ Revisión del agente durante la implementación: estática, sin comandos ni POST
 - [x] UUID local conservado para correlación e idempotencia.
 - [x] Captura y persistencia local sin conexión validadas en 3.9; se conserva el manejo de errores de envío y los pendientes no confirmados.
 
+## Corrección 1 — Orientación vertical
+
+**Estado: Completada y validada en Xiaomi 11T.**
+
+- [x] Añadir `android:screenOrientation="portrait"` a la actividad principal en `android/app/src/main/AndroidManifest.xml`.
+- [x] Validar en Xiaomi 11T que la interfaz permanece vertical al girar, navegando entre pantallas y con captura/sincronización; confirmado por el usuario.
+
 ## Fase 5 — Machine Learning
 
 **Estado: Pendiente**
