@@ -2,15 +2,59 @@
 
 ## Estado general
 
-**Etapa actual:** Fase 5-C — Conectividad HTTPS, completada y validada por el usuario en Xiaomi 11T. Corresponde a la preparación de la Fase 4 histórica del frontend; se conserva la numeración coordinada con el backend.
+**Etapa actual:** Fase 5-D.2-B — Sincronización individual y eliminación local, implementada y pendiente de validación en Android. La Fase 5-D.2 fue validada exitosamente por el usuario en Xiaomi 11T.
 
-**Estado de la tarea:** Comunicación HTTPS con Render confirmada: HTTP 200, rutas esperadas verificadas y tiempo de respuesta de 32669 ms. Se retiraron el botón temporal, sus estilos y el hook de diagnóstico; la infraestructura HTTP permanece disponible. La Fase 5-B permanece completada y validada. La sincronización HTTP continúa pendiente.
+**Estado de la tarea:** El núcleo de sincronización de la Fase 5-D.1 fue verificado por el usuario con typecheck, lint y build. La Fase 5-D.2 conecta Predicción con `POST /prediccion`, muestra solo pendientes y añade una barra de acción fija sobre la navegación. La Fase 5-B y la Fase 5-C permanecen completadas y validadas. No se envió Entrenamiento ni se ejecutaron peticiones reales durante la implementación.
 
-**Siguiente acción:** abordar la sincronización de registros en una tarea posterior; no se implementa durante este cierre.
+**Siguiente acción:** ejecutar typecheck, lint y build; validar acciones individuales en Xiaomi 11T y esperar aprobación antes de Fase 5-D.3.
 
 > Nota: las referencias a `DatabaseTest` y `CaptureTest` en secciones históricas describen etapas anteriores. Ambos componentes fueron eliminados en la tarea 3.9-A y no forman parte del estado actual.
 
 ## Trabajo completado
+
+### Fase 5-D.2-B — Implementada, pendiente de validación en Android
+
+- Nuevo `src/services/recordOperations.ts`: exclusión mutua observable por `useSyncExternalStore`; rechaza operaciones concurrentes y libera en `finally`. Envíos retienen el bloqueo hasta terminar la petición nativa incluso tras un timeout de interfaz.
+- `sync.ts`: `sincronizarRegistro(tipo, idLocal)` consulta el registro completo, comprueba tipo y estado, y reutiliza elegibilidad, transformación, validación de respuesta y marcado del mismo procesador que la sincronización masiva. Envía un único elemento; la masiva mantiene lotes de cinco.
+- `database.ts`: no existía eliminación reutilizable de capturas. `deletePendingRecord` usa el bloqueo común y un DELETE atómico condicionado por UUID, tipo y estado pendiente; exige una fila afectada, sin deserializar las muestras ni modificar el esquema.
+- `useRecordSync.ts`: confirmación explícita con UUID y mediciones; cancelar no elimina ni refresca. Maneja errores, bloqueo síncrono y desmontaje. El estado global deshabilita acciones también al regresar durante un envío y dispara refresco cuando termina.
+- `RecordCard`, `RecordList`, `RecordsSyncView` e `index.css`: acciones opcionales con nube/subida y papelera accesibles en grid junto al estado. Solo Sincronizar suministra estas acciones. Resumen muestra pendientes restantes consultados en SQLite, no solo los del envío individual.
+- Predicción permite envío individual/masivo y eliminación. Entrenamiento permite eliminación; el hook y los botones mantienen HTTP deshabilitado.
+- Se conserva `AppLayout` y su portal de barra fija. Estilos usan los tokens existentes (el proyecto actualmente define tema claro).
+
+**Revisión realizada:** inspección estática de imports, consultas SQL, bloqueo compartido, rutas de error y consumidores de componentes. Sin comandos, POST reales, instalaciones ni cambios en backend/sensores.
+
+**Pendiente de usuario:** typecheck/lint/build y casos Android: guardado, existente, fallido, red, eliminación/cancelación/error SQLite, doble pulsación y exclusión individual/masiva/eliminación, navegación durante envío, contador/vacío, alineación en pantalla pequeña y tarjetas sin acciones fuera de Sincronizar. No se atribuyen pruebas ejecutadas a esta revisión.
+
+### Fase 5-D.2 — Completada y validada por el usuario en Xiaomi 11T
+
+- `src/services/database.ts`: `getPendingRecords(tipo?)` acepta un filtro opcional y lo aplica en la cláusula SQL antes de deserializar `mediciones`. Sin argumento conserva el comportamiento anterior.
+- `src/services/sync.ts`: la sincronización consulta solo el tipo solicitado, de modo que una fila corrupta de Entrenamiento no bloquea los pendientes de Predicción, ni viceversa.
+- `src/hooks/useRecordSync.ts`: hook reutilizable con bloqueo síncrono de dobles pulsaciones, estado de procesamiento, resumen, error y refresco final. No actualiza estado React después de desmontar; el servicio continúa confirmando en SQLite aunque el usuario navegue.
+- `src/components/records/RecordsSyncView.tsx`: muestra únicamente `estado_sync === "pendiente"` del tipo actual, reutiliza `RecordList`/`RecordCard`, muestra contador, carga, vacío, error con reintento y un resumen que separa confirmados por el servidor, guardados, existentes, fallidos, omitidos y pendientes restantes.
+- Predicción usa `sincronizarPendientes("prediccion")` y `POST /prediccion` en lotes secuenciales de cinco. Entrenamiento conserva la estructura visual con la acción deshabilitada y la nota de próxima fase.
+- `src/layouts/AppLayout.tsx` y `src/index.css`: el layout pasa a una estructura de altura completa con contenido central desplazable y navegación inferior fija. La vista monta su barra de acción en un contenedor dedicado entre el contenido y la navegación mediante un portal de React, sin posiciones absolutas ni superposición; el contenedor se oculta cuando está vacío.
+- No se modificó el esquema SQLite, no se instalaron dependencias, no se alteró la captura de sensores, no se eliminaron registros ni se cambiaron UUID. No se ejecutaron peticiones POST reales ni comandos de terminal.
+
+**Pendiente:** typecheck, lint y build por el usuario; después validación en Xiaomi 11T de una predicción, varias, más de cinco, sin pendientes, respuestas parciales, error de red, doble pulsación, navegación durante el envío, persistencia tras reiniciar y posición fija del botón durante el desplazamiento.
+
+**Comandos de referencia para la validación**, desde `ml-sensores/`, continuando solo si cada paso termina correctamente:
+
+```bash
+npm run typecheck
+npm run lint
+npm run build
+npx cap sync android
+npx cap open android
+```
+
+Las pruebas de integración con la API y MongoDB se harán en el Xiaomi 11T con autorización del usuario; no se ejecutaron POST reales durante la implementación.
+
+### Fase 5-D.1 — Completada y verificada por el usuario
+
+- `src/types/sync.ts` y `src/services/sync.ts`: contrato, elegibilidad local, transformación explícita, lotes de cinco, correlación por UUID canónico, validación de contadores, confirmaciones y bloqueo de sincronizaciones concurrentes.
+- Reenvío idempotente conservando los UUID; solo se marcan `guardado` y `existente` con `id_mongo` válido. Sin interfaz ni peticiones reales durante la implementación.
+- El usuario confirmó typecheck, lint y build correctos.
 
 ### Fase 5-C — Completada y validada por el usuario
 

@@ -12,6 +12,7 @@ export default function AppLayout() {
       <main id="main-content" className="app-content">
         <Outlet />
       </main>
+      <div id="app-action-bar" className="app-action-bar" />
       <BottomNavigation />
     </div>
   );

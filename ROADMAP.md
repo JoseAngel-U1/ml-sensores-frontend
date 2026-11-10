@@ -30,7 +30,7 @@ Resultado de referencia: 601 mediciones válidas en 10 segundos, con frecuencia 
 
 ## Fase 3 — Interfaz y captura
 
-**Estado: Completada — tareas 3.1 a 3.9 completadas y validadas. La preparación de Fase 4 incorpora participantes locales en Fase 5-B, completada y validada por el usuario; la sincronización HTTP sigue pendiente.**
+**Estado: Completada — tareas 3.1 a 3.9 completadas y validadas. La preparación de Fase 4 incorpora participantes locales en Fase 5-B, completada y validada por el usuario; la sincronización manual de Predicción (5-D.2) está implementada y pendiente de validación en Android.**
 
 Referencia: [docs/UI_ARCHITECTURE.md](docs/UI_ARCHITECTURE.md). Solo dos páginas principales (`TrainingPage` y `PredictionPage`), cada una con vistas internas Captura y Sincronizar. Rutas aprobadas: `/entrenamiento`, `/entrenamiento/sincronizar`, `/prediccion` y `/prediccion/sincronizar`. `App.tsx` define las rutas y redirige las desconocidas a `/entrenamiento`; `AppLayout` comparte encabezado, navegación inferior y contenido activo.
 
@@ -49,7 +49,7 @@ Las verificaciones de tipos, lint, build y Android de cada tarea fueron ejecutad
 
 ## Fase 4 — Integración con FastAPI y MongoDB
 
-**Estado: En preparación — Fases 5-B y 5-C completadas y validadas por el usuario en Android. Sincronización HTTP pendiente.**
+**Estado: En preparación — Fases 5-B y 5-C completadas y validadas por el usuario en Android. Núcleo de sincronización (5-D.1) verificado por el usuario; sincronización manual de Predicción (5-D.2) implementada y pendiente de validación en Android.**
 
 La Fase 3 quedó finalizada; la sincronización remota y la integración con el backend se abordarán en esta fase.
 
@@ -74,7 +74,41 @@ Implementación en código: tabla `participantes`, secuencia persistente, migrac
 
 No se atribuyen resultados individuales a typecheck/lint/build, pruebas sin conexión, timeout o comparación Wi-Fi/datos móviles que no hayan sido confirmados. La limpieza del diagnóstico se revisó estáticamente.
 
-La numeración 5-B/5-C corresponde a las tareas coordinadas con el backend, dentro de la Fase 4 histórica del frontend. No reemplaza la Fase 5 de Machine Learning que figura más adelante. La sincronización HTTP continúa pendiente de implementación en una tarea posterior.
+La numeración 5-B/5-C corresponde a las tareas coordinadas con el backend, dentro de la Fase 4 histórica del frontend. No reemplaza la Fase 5 de Machine Learning que figura más adelante. La sincronización manual de Predicción quedó implementada en 5-D.2 y pendiente de validación en Android.
+
+### Fase 5-D.1 — Núcleo de sincronización
+
+**Implementada y verificada por el usuario con typecheck, lint y build.**
+
+- [x] Tipos del contrato de sincronización en `src/types/sync.ts`.
+- [x] Servicio `src/services/sync.ts` con elegibilidad local, transformación explícita, lotes de cinco, correlación por UUID, validación de contadores y bloqueo de sincronizaciones concurrentes.
+- [x] Reenvío idempotente conservando los UUID; solo se confirman `guardado` y `existente` con `id_mongo` válido.
+- [x] Sin conexión a la interfaz ni peticiones reales durante la implementación.
+
+### Fase 5-D.2 — Sincronización manual de Predicción
+
+**Completada y validada por el usuario en Xiaomi 11T.**
+
+- [x] `getPendingRecords(tipo?)` filtra por tipo en SQL antes de deserializar las mediciones; sin argumento conserva ambos tipos.
+- [x] `RecordsSyncView` muestra exclusivamente registros pendientes del módulo actual, reutilizando `RecordList` y `RecordCard`.
+- [x] Barra de acción fija sobre la navegación inferior, con contenido desplazable y respeto del área segura.
+- [x] Hook reutilizable `useRecordSync` con bloqueo de dobles pulsaciones, resumen y limpieza segura al desmontar.
+- [x] Predicción envía `POST /prediccion` en lotes secuenciales de cinco mediante el servicio de 5-D.1.
+- [x] Entrenamiento conserva la estructura visual con la acción deshabilitada y una nota de próxima fase.
+- [ ] Validación en Xiaomi 11T: una y varias predicciones, más de cinco, respuestas parciales, error de red, doble pulsación, navegación durante el envío y persistencia tras reiniciar.
+
+
+### Fase 5-D.2-B — Acciones individuales en pendientes
+
+**Implementada; pendiente de typecheck, lint, build y validación en Android.**
+
+- Sincronización por UUID reutilizando el procesador de lotes y sus validaciones; masiva conserva lotes de cinco.
+- Eliminación local confirmada mediante `window.confirm`, condicionada por UUID, tipo y estado pendiente en SQL.
+- Bloqueo observable compartido entre envíos individuales, masivos y eliminación, incluso al navegar.
+- Tarjetas con grid de estado, nube/subida y papelera; acciones opcionales exclusivas de Sincronizar.
+- Predicción permite ambas acciones; Entrenamiento solo eliminación, con HTTP deshabilitado.
+- Pendiente: respuestas guardado/existente/fallido, red, cancelación/error de eliminación, doble pulsación, navegación, contador, vacío y alineación en Xiaomi 11T.
+- Esperar aprobación antes de Fase 5-D.3. Sin POST reales durante la implementación.
 
 ### Plan histórico de integración
 

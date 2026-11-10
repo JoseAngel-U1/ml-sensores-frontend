@@ -1,4 +1,5 @@
 import { Capacitor } from "@capacitor/core";
+import { conBloqueoRegistros } from "./recordOperations";
 import { CapacitorSQLite, SQLiteConnection } from "@capacitor-community/sqlite";
 import type { SQLiteDBConnection } from "@capacitor-community/sqlite";
 import type { Medicion, Participante, Registro, RegistroResumen, TipoRegistro } from "../types/records";
@@ -356,11 +357,19 @@ export function getRecordSummaries(tipo: TipoRegistro): Promise<RegistroResumen[
 
 /**
  * Consulta únicamente registros pendientes de sincronización, sin enviarlos.
+ * El filtro por tipo se aplica en SQL antes de deserializar las mediciones, de
+ * modo que una fila corrupta de un tipo no bloquea la consulta del otro.
+ * @param tipo Tipo opcional que se desea consultar; sin filtro devuelve ambos.
  * @returns Lista de pendientes por fecha descendente e ID ascendente.
  * @throws Si falla la consulta o la validación de los registros recuperados.
  */
-export function getPendingRecords(): Promise<Registro[]> {
-  return queryRecords("SELECT * FROM registros WHERE estado_sync = ? ORDER BY fecha DESC, id ASC", ["pendiente"]);
+export function getPendingRecords(tipo?: TipoRegistro): Promise<Registro[]> {
+  const filtroTipo = tipo === undefined ? "" : " AND tipo = ?";
+  const valores = tipo === undefined ? ["pendiente"] : ["pendiente", tipo];
+  return queryRecords(
+    `SELECT * FROM registros WHERE estado_sync = ?${filtroTipo} ORDER BY fecha DESC, id ASC`,
+    valores,
+  );
 }
 
 /**
@@ -372,6 +381,19 @@ export function getPendingRecords(): Promise<Registro[]> {
 export async function getRecordById(id: string): Promise<Registro | null> {
   const records = await queryRecords("SELECT * FROM registros WHERE id = ?", [id]);
   return records[0] ?? null;
+}
+
+/** Comprueba tipo y estado en la misma sentencia que elimina la fila y sus muestras. */
+export async function deletePendingRecord(tipo: TipoRegistro, id: string): Promise<void> {
+  await conBloqueoRegistros(() => withDatabase("No se pudo eliminar el registro local", async (db) => {
+    const result = await db.run(
+      "DELETE FROM registros WHERE id = ? AND tipo = ? AND estado_sync = ?",
+      [id, tipo, "pendiente"],
+    );
+    if (result.changes?.changes !== 1) {
+      throw new Error("El registro ya no existe, no pertenece al módulo o ya no está pendiente.");
+    }
+  }));
 }
 
 /**

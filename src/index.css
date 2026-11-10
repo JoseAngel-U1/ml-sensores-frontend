@@ -59,19 +59,15 @@
   box-sizing: border-box;
 }
 
-html {
-  /* Mantiene el foco visible frente al encabezado y la navegación sticky. */
-  scroll-padding-top: calc(6rem + env(safe-area-inset-top, 0px));
-  scroll-padding-bottom: calc(7rem + env(safe-area-inset-bottom, 0px));
-}
-
 body {
   margin: 0;
   min-width: 0;
 }
 
 #root {
-  min-height: 100svh;
+  height: 100vh;
+  height: 100svh;
+  min-height: 0;
 }
 
 h1,
@@ -236,18 +232,21 @@ pre {
   margin-bottom: 0;
 }
 
-/* El layout conserva el flujo del documento para reservar el espacio de las
-   barras sin alturas rígidas; los insets cubren también la orientación horizontal. */
+/* Estructura fija de pantalla completa: el encabezado y la navegación reservan
+   su espacio y solo el contenido central se desplaza. Así la barra de acción
+   de una vista puede quedarse fija justo encima de la navegación inferior. */
 .app-layout {
-  min-height: 100svh;
+  height: 100vh;
+  height: 100svh;
+  min-height: 0;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .app-header {
-  position: sticky;
-  top: 0;
-  z-index: 20;
+  flex: 0 0 auto;
+  position: static;
   background: var(--color-background);
   border-bottom: 1px solid var(--color-primary);
   padding-top: env(safe-area-inset-top, 0px);
@@ -289,17 +288,29 @@ pre {
 }
 
 .app-content {
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 0;
+  min-height: 0;
   padding-top: var(--space-lg);
   padding-bottom: var(--space-xl);
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
   overflow-wrap: anywhere;
 }
 
+.app-action-bar {
+  flex: 0 0 auto;
+  background: var(--color-background);
+}
+
+.app-action-bar:empty {
+  display: none;
+}
+
 .bottom-navigation {
-  position: sticky;
-  bottom: 0;
-  z-index: 20;
+  flex: 0 0 auto;
+  position: static;
   border-top: 1px solid var(--color-border);
   background: var(--color-surface);
   padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -893,6 +904,93 @@ pre {
   overflow-wrap: anywhere;
 }
 
+.records-sync__result {
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+
+.records-sync__result h3 {
+  margin-bottom: var(--space-sm);
+  font-size: 1.125rem;
+}
+
+.records-sync__result-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: var(--space-xs);
+  margin: 0;
+}
+
+.records-sync__result-metrics > div {
+  min-width: 0;
+  padding: var(--space-sm);
+  border-radius: var(--radius-control);
+  background: var(--color-background);
+}
+
+.records-sync__result-metrics dt {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-small);
+}
+
+.records-sync__result-metrics dd {
+  margin: 0;
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.records-sync__note {
+  margin: var(--space-sm) 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-small);
+}
+
+.records-sync__warning {
+  margin: var(--space-sm) 0 0;
+  padding: var(--space-sm);
+  border: 1px solid var(--color-error-border);
+  border-radius: var(--radius-control);
+  background: var(--color-error-background);
+  color: var(--color-error);
+  font-size: var(--font-size-small);
+}
+
+.records-sync__action {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  width: 100%;
+  max-width: 56rem;
+  margin-inline: auto;
+  padding-block: var(--space-sm);
+  padding-left: max(var(--page-margin), env(safe-area-inset-left, 0px));
+  padding-right: max(var(--page-margin), env(safe-area-inset-right, 0px));
+  border-top: 1px solid var(--color-border);
+  background: var(--color-background);
+}
+
+.records-sync__action-button {
+  width: 100%;
+}
+
+.records-sync__action-status,
+.records-sync__action-note {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-small);
+  text-align: center;
+}
+
+.records-sync__action-status {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
 .record-list {
   display: grid;
   gap: var(--space-sm);
@@ -920,6 +1018,29 @@ pre {
   flex-direction: column;
   gap: var(--space-3xs);
   min-width: 0;
+}
+
+.record-card__actions {
+  display: grid;
+  grid-template-columns: max-content repeat(2, var(--touch-target));
+  align-items: center;
+  gap: var(--space-xs);
+  max-width: 100%;
+}
+
+.record-card__status-only {
+  display: contents;
+}
+
+.record-card__icon-button {
+  width: var(--touch-target);
+  height: var(--touch-target);
+  padding: 0;
+}
+
+.record-card__icon-button svg {
+  width: 1.25rem;
+  height: 1.25rem;
 }
 
 .record-card__label {
