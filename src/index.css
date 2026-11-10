@@ -511,6 +511,95 @@ pre {
   font-size: var(--font-size-label);
 }
 
+.sidebar__api-result {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  width: 100%;
+  margin: var(--space-sm) 0 0;
+  padding: var(--space-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-background);
+  color: var(--color-text-secondary);
+}
+
+.sidebar__api-result p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.sidebar__api-copy {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-3xs);
+}
+
+.sidebar__api-title {
+  color: var(--color-text);
+  font-size: var(--font-size-small);
+  font-weight: 600;
+}
+
+.sidebar__api-meta {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-label);
+  font-variant-numeric: tabular-nums;
+}
+
+.sidebar__api-detail {
+  font-size: var(--font-size-label);
+}
+
+.sidebar__api-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 1.5rem;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.sidebar__api-spinner {
+  flex: 0 0 1rem;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: var(--radius-pill);
+  animation: sidebar-api-spin 800ms linear infinite;
+}
+
+.sidebar__api-result--comprobando,
+.sidebar__api-result--exito {
+  color: var(--color-primary);
+}
+
+.sidebar__api-result--exito {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+.sidebar__api-result--error {
+  border-color: var(--color-error-border);
+  background: var(--color-error-background);
+  color: var(--color-error);
+}
+
+.sidebar__api-result--comprobando .sidebar__api-title,
+.sidebar__api-result--exito .sidebar__api-title {
+  color: var(--color-primary);
+}
+
+.sidebar__api-result--error .sidebar__api-title {
+  color: var(--color-error);
+}
+
+@keyframes sidebar-api-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .sidebar__footer {
   flex: 0 0 auto;
   padding: var(--space-md);
@@ -1330,5 +1419,9 @@ pre {
   .app-header__menu::after {
     animation: none;
     opacity: 0.35;
+  }
+
+  .sidebar__api-spinner {
+    animation: none;
   }
 }

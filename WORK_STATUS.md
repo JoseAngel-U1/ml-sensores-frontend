@@ -6,9 +6,9 @@
 
 **Estado de la tarea:** Fases 5-C, 5-D.1, 5-D.2, 5-D.2-B y 5-D.3 completadas y validadas en Android. El usuario confirmó typecheck, lint y build satisfactorios, sincronización de Entrenamiento y Predicción en Xiaomi 11T y almacenamiento en MongoDB verificado. Las fases anteriores 5-D.1, 5-D.2 y 5-D.2-B fueron guardadas mediante commit por el usuario, según su confirmación previa.
 
-**Corrección UI actual:** Correcciones 2-A (Sidebar inicial) y 2-B (Atrás de Android) completadas y validadas en Xiaomi 11T. El Test API permanece pendiente: actualmente es solo visual y está deshabilitado.
+**Corrección UI actual:** Correcciones 2-A (Sidebar inicial), 2-B (Atrás de Android) y 2-C (Test API funcional) completadas y validadas en Xiaomi 11T. Test API ya no es solo visual: es una prueba manual de conectividad HTTPS.
 
-**Siguiente acción:** continuar con la recolección del dataset definitivo y el trabajo en Python/Jupyter. La implementación del Sidebar no modifica captura, SQLite, sensores ni sincronización; el Test API sigue pendiente y deshabilitado.
+**Siguiente acción:** continuar con la recolección del dataset definitivo y el trabajo en Python/Jupyter. La implementación del Sidebar y Test API no modifica captura, SQLite, sensores ni sincronización.
 
 ### Frontend actual
 
@@ -16,7 +16,7 @@
 - Captura de acelerómetro y giroscopio para registros de Entrenamiento y Predicción.
 - Gestión de participantes y persistencia local SQLite.
 - Orientación vertical bloqueada de forma nativa en `AndroidManifest.xml`; validada por el usuario en Xiaomi 11T.
-- Sidebar inicial implementado y validado en Android; el Test API permanece pendiente, exclusivamente visual y deshabilitado.
+- Sidebar inicial implementado y validado en Android; Test API convertido en prueba manual de conectividad HTTPS, implementado y validado en Android.
 - El evento Atrás de Android cierra el Sidebar cuando está abierto; con el Sidebar cerrado se conserva la navegación existente. Implementado y validado en Android.
 
 ### Sincronización actual
@@ -36,11 +36,11 @@
 - Almacenamiento de registros en MongoDB verificado.
 - Orientación vertical bloqueada validada en Xiaomi 11T.
 - Sidebar inicial y Atrás de Android: Correcciones 2-A y 2-B validadas satisfactoriamente en Xiaomi 11T.
+- Test API funcional: Corrección 2-C validada satisfactoriamente en Xiaomi 11T; `GET /openapi.json` responde correctamente desde el Sidebar, con estados de carga, éxito, error y recuperación de conexión confirmados. El cierre del Sidebar durante la solicitud funciona, Test API no interfiere con la sincronización y la navegación y los métodos de cierre siguen operativos.
 - Fase 5-D.3 validada y cerrada. No se añaden fechas, versiones ni resultados individuales de pruebas no informados.
 
 ### Pendientes actuales
 
-- Test API funcional; actualmente es solo visual y está deshabilitado.
 - Recolección del dataset definitivo.
 - Preparación y análisis del dataset en Python/Jupyter.
 - Entrenamiento y evaluación del modelo.
@@ -64,11 +64,11 @@ Las descripciones de restricciones y funcionalidades aún pendientes dentro de e
 
 ### Corrección 2-A — Sidebar inicial (completada y validada en Android)
 
-- `src/shared/Sidebar.tsx`: drawer lateral con overlay, cierre por fondo/Escape, gestión de foco, encabezado con icono y «ML Sensores», divisoria, Test API visual deshabilitado y créditos al pie.
+- `src/shared/Sidebar.tsx`: drawer lateral con overlay, cierre por fondo/Escape, gestión de foco, encabezado con icono y «ML Sensores», divisoria, Test API (visual y deshabilitado en 2-A) y créditos al pie.
 - `src/shared/Header.tsx`: el icono decorativo pasa a botón cuadrado que abre el Sidebar, con `aria-expanded`, `aria-controls` y animación sutil de borde.
 - `src/layouts/AppLayout.tsx`: estado abierto/cerrado y renderizado del Sidebar; no se alteran rutas, captura, SQLite, sensores ni sincronización.
 - `src/index.css`: estilos responsive, overlay, transición horizontal, áreas seguras, foco visible y soporte de movimiento reducido.
-- El Test API permanece pendiente: es solo visual y está deshabilitado; no ejecuta HTTP ni usa `/openapi.json`. No se añadió el segundo botón ni navegación a todos los registros. Sin selector de tema, dependencias ni commits.
+- En 2-A el Test API era solo visual y deshabilitado; su habilitación funcional se registra en la Corrección 2-C. No se añadió el segundo botón ni navegación a todos los registros. Sin selector de tema, dependencias ni commits.
 - Validación física completada en Xiaomi 11T: apertura, diseño, cierre con X, cierre al tocar fuera (overlay), transición, foco, áreas seguras, créditos y ausencia de desbordamiento.
 - Validación final completada en Xiaomi 11T, incluyendo el cierre con Atrás de Android.
 
@@ -78,6 +78,17 @@ Las descripciones de restricciones y funcionalidades aún pendientes dentro de e
 - `src/layouts/AppLayout.tsx`: el interceptor cierra el Sidebar solo cuando está abierto y devuelve `true`; si está cerrado, devuelve `false` y mantiene la navegación existente.
 - No se modifica el historial, las rutas, el Sidebar, el Header, Test API, SQLite, sensores, sincronización, FastAPI ni MongoDB. Sin dependencias nuevas ni commits.
 - Validación física completada en Xiaomi 11T con botón y gesto Atrás en Entrenamiento y Predicción; X, overlay, Escape y Atrás con el Sidebar cerrado confirmados.
+
+### Corrección 2-C — Test API funcional desde Sidebar (completada y validada en Android)
+
+- `src/services/api.ts`: `checkApiConnectivity` reutiliza `requestApi` en modo no exclusivo para no retener el bloqueo HTTP de sincronización; conserva timeout de 60 segundos y validación HTTP 200, JSON y estructura OpenAPI.
+- `src/hooks/useApiConnectivityTest.ts`: estados inicial/comprobando/éxito/error, guardas contra solicitudes duplicadas y desmontaje, medición de tiempo y mensajes comprensibles.
+- El error presenta código HTTP, tiempo y mensaje; distingue HTTP, timeout, red y respuesta inválida reutilizando el manejo existente de `ApiError`.
+- `src/shared/Sidebar.tsx`: botón habilitado que ejecuta la prueba solo al pulsarlo; resultado compacto bajo el botón con código HTTP, milisegundos y mensaje; mantiene X, overlay, Escape, Atrás, grid para dos acciones y créditos.
+- `src/index.css`: estilos accesibles para carga, éxito y error, con `prefers-reduced-motion`.
+- La prueba usa `GET /openapi.json`, la URL base configurada y el servicio HTTP existente; sin reintentos automáticos, endpoints nuevos, dependencias ni servicios duplicados.
+- No se modifican FastAPI, MongoDB, SQLite, sensores ni sincronización. Sin commits/push del agente.
+- Validación física completada en Xiaomi 11T: `GET /openapi.json` funciona correctamente desde el Sidebar; estados de carga, éxito, error y recuperación de conexión confirmados; el cierre del Sidebar durante la solicitud funciona sin errores ni navegación alterada; Test API no interfiere con la sincronización de registros; la navegación y los métodos de cierre del Sidebar (X, overlay, Escape y Atrás) siguen funcionando.
 
 ### Fase 5-D.3 — Completada y validada en Android
 

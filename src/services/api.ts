@@ -21,6 +21,7 @@ interface ApiRequest {
   method: "GET" | "POST";
   path: string;
   data?: unknown;
+  exclusive?: boolean;
 }
 
 interface ApiResponse {
@@ -29,12 +30,12 @@ interface ApiResponse {
   elapsedMs: number;
 }
 
-export async function requestApi({ method, path, data }: ApiRequest): Promise<ApiResponse> {
+export async function requestApi({ method, path, data, exclusive = true }: ApiRequest): Promise<ApiResponse> {
   const url = getApiUrl(path);
-  if (solicitudPendiente) {
+  if (exclusive && solicitudPendiente) {
     throw new ApiError("La solicitud anterior sigue finalizando. Espera unos instantes antes de reintentar.");
   }
-  solicitudPendiente = true;
+  if (exclusive) solicitudPendiente = true;
   const controller = new AbortController();
   let timer: ReturnType<typeof setTimeout> | undefined;
   const inicio = performance.now();
@@ -64,12 +65,12 @@ export async function requestApi({ method, path, data }: ApiRequest): Promise<Ap
       if (cause instanceof ApiError) throw cause;
       throw new ApiError("No se pudo completar la solicitud HTTPS. Comprueba internet y la disponibilidad del servidor; puede tratarse de un fallo de red, TLS, timeout o CORS en navegador.");
     } finally {
-      // El timeout de interfaz no cancela la petición nativa. No permitir otra
-      // hasta que Capacitor termine, aunque la alerta de timeout ya se mostrara.
-      solicitudPendiente = false;
+      // El timeout de interfaz no cancela la petición nativa. Las solicitudes
+      // exclusivas retienen el bloqueo hasta que termine; Test API no interfiere.
+      if (exclusive) solicitudPendiente = false;
     }
   })();
-  finalizacionPendiente = solicitud.then(() => undefined, () => undefined);
+  if (exclusive) finalizacionPendiente = solicitud.then(() => undefined, () => undefined);
 
   try {
     const limite = new Promise<never>((_resolve, reject) => {
@@ -89,7 +90,8 @@ function isObject(value: unknown): value is Record<string, unknown> {
 }
 
 export async function checkApiConnectivity(): Promise<{ status: number; elapsedMs: number }> {
-  const response = await requestApi({ method: "GET", path: "/openapi.json" });
+  // La prueba manual no retiene el bloqueo HTTP usado por la sincronización.
+  const response = await requestApi({ method: "GET", path: "/openapi.json", exclusive: false });
   if (response.status !== 200) {
     throw new ApiError("La comprobación requiere una respuesta HTTP 200.", response.status);
   }

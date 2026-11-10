@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useApiConnectivityTest } from "../hooks/useApiConnectivityTest";
 
 type SidebarProps = {
   abierto: boolean;
@@ -18,6 +19,7 @@ export default function Sidebar({ abierto, onCerrar }: SidebarProps) {
   const panelRef = useRef<HTMLElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
+  const { estado: estadoTestApi, comprobando, comprobarConexion } = useApiConnectivityTest();
 
   useEffect(() => {
     if (!abierto) return;
@@ -130,8 +132,12 @@ export default function Sidebar({ abierto, onCerrar }: SidebarProps) {
               <button
                 type="button"
                 className="sidebar__action"
-                disabled
-                aria-label="Test API, no disponible"
+                onClick={() => {
+                  void comprobarConexion();
+                }}
+                disabled={comprobando}
+                aria-busy={comprobando}
+                aria-describedby="sidebar-api-note"
               >
                 <svg className="navigation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
                   <path d="M9 7V3M15 7V3M7 7h10v4a5 5 0 0 1-10 0V7ZM12 16v5" />
@@ -139,7 +145,58 @@ export default function Sidebar({ abierto, onCerrar }: SidebarProps) {
                 <span>Test API</span>
               </button>
             </div>
-            <p className="sidebar__section-note">Disponible próximamente.</p>
+            <p id="sidebar-api-note" className="sidebar__section-note">
+              Comprueba manualmente la conexión HTTPS con FastAPI.
+            </p>
+            {estadoTestApi.estado !== "inicial" && (
+              <div
+                className={`sidebar__api-result sidebar__api-result--${estadoTestApi.estado}`}
+                role={estadoTestApi.estado === "error" ? "alert" : "status"}
+                aria-live={estadoTestApi.estado === "error" ? "assertive" : "polite"}
+                aria-atomic="true"
+                aria-busy={estadoTestApi.estado === "comprobando"}
+              >
+                {estadoTestApi.estado === "comprobando" && (
+                  <>
+                    <span className="sidebar__api-spinner" aria-hidden="true" />
+                    <p className="sidebar__api-title">Comprobando conexión...</p>
+                  </>
+                )}
+                {estadoTestApi.estado === "exito" && (
+                  <>
+                    <span className="sidebar__api-icon" aria-hidden="true">
+                      <svg className="navigation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" focusable="false">
+                        <path d="M20 6L9 17l-5-5" />
+                      </svg>
+                    </span>
+                    <div className="sidebar__api-copy">
+                      <p className="sidebar__api-title">Conexión exitosa</p>
+                      <p className="sidebar__api-meta">
+                        HTTP {estadoTestApi.codigoHttp} · {estadoTestApi.tiempoMs} ms
+                      </p>
+                    </div>
+                  </>
+                )}
+                {estadoTestApi.estado === "error" && (
+                  <>
+                    <span className="sidebar__api-icon" aria-hidden="true">
+                      <svg className="navigation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" focusable="false">
+                        <path d="M12 9v4M12 17h.01" />
+                        <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" />
+                      </svg>
+                    </span>
+                    <div className="sidebar__api-copy">
+                      <p className="sidebar__api-title">No se pudo conectar</p>
+                      <p className="sidebar__api-meta">
+                        {estadoTestApi.codigoHttp !== undefined ? `HTTP ${estadoTestApi.codigoHttp} · ` : ""}
+                        {estadoTestApi.tiempoMs} ms
+                      </p>
+                      <p className="sidebar__api-detail">{estadoTestApi.mensaje}</p>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </section>
         </div>
 

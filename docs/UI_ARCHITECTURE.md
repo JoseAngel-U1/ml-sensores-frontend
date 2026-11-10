@@ -6,7 +6,7 @@ Arquitectura aprobada e implementada. La Fase 3 está completada y validada en A
 
 La arquitectura de Fase 3 se amplió con participantes (5-B) y conectividad/sincronización (5-C a 5-D.3), completadas y validadas por el usuario en Xiaomi 11T. Las vistas «Sincronizar» muestran exclusivamente pendientes de su módulo y permiten envío individual/masivo y eliminación local. FastAPI está desplegada en Render y el almacenamiento en MongoDB fue verificado por el usuario. Dataset definitivo, entrenamiento del modelo e inferencia permanecen pendientes.
 
-El Sidebar inicial (Corrección 2-A) y el cierre con Atrás de Android (Corrección 2-B) están completados y validados en Xiaomi 11T. La apertura, el diseño, el cierre con X, el cierre al tocar fuera, la transición, el foco, las áreas seguras, los créditos y la ausencia de desbordamiento horizontal fueron confirmados; Atrás cierra el Sidebar abierto sin navegar ni salir y conserva el historial cuando está cerrado. Se abre desde el botón del encabezado, usa overlay y cierre por fondo/Escape, contiene el Test API exclusivamente visual (deshabilitado, sin HTTP), que permanece pendiente, y los créditos. No incluye cambio de tema ni navegación a todos los registros.
+El Sidebar inicial (Corrección 2-A), el cierre con Atrás de Android (Corrección 2-B) y el Test API funcional (Corrección 2-C) están completados y validados en Xiaomi 11T. Test API es una prueba manual de conectividad HTTPS: se ejecuta solo al pulsar el botón, usa `GET /openapi.json` con la URL base configurada, reutiliza `checkApiConnectivity`/`requestApi` y muestra su resultado compacto dentro del Sidebar. La validación confirmó `GET /openapi.json` desde el Sidebar, los estados de carga, éxito, error y recuperación de conexión, el cierre del Sidebar durante la solicitud, la no interferencia con la sincronización de registros y la navegación y métodos de cierre del panel. El panel conserva overlay, cierre por fondo/Escape, encabezado, grid para dos acciones y créditos. No incluye cambio de tema ni navegación a todos los registros.
 
 ## 1. Inventario actual y reutilización
 
@@ -20,11 +20,12 @@ El Sidebar inicial (Corrección 2-A) y el cierre con Atrás de Android (Correcci
 | `src/hooks/useParticipants.ts` | Consulta, selección, creación y eliminación de participantes con confirmación. | Captura de Entrenamiento. |
 | `src/hooks/useRecordSync.ts` | Envío individual/masivo, confirmación de eliminación, errores y refresco; observa bloqueo global. | Vistas Sincronizar de ambos módulos. |
 | `src/hooks/useAndroidBackNavigation.ts` | Escucha `backButton` de Capacitor, permite un interceptor previo y conserva el historial cuando no se consume; validado en Android. | `AppLayout` y Router; sin historial paralelo. |
-| `src/shared/Sidebar.tsx` | Drawer lateral reutilizable: overlay, cierre por fondo/Escape, gestión de foco, Test API visual deshabilitado (pendiente) y créditos. | `AppLayout`; sin HTTP, SQLite, sensores ni rutas nuevas. |
+| `src/hooks/useApiConnectivityTest.ts` | Estado de la prueba manual de conectividad: guardas de duplicados/desmontaje, tiempo y mensajes; validada en Android. | `Sidebar`; reutiliza `checkApiConnectivity`. |
+| `src/shared/Sidebar.tsx` | Drawer lateral reutilizable: overlay, cierre por fondo/Escape, gestión de foco, Test API manual con resultado compacto y créditos; validado en Android. | `AppLayout`; HTTP delegado a hook/servicio, sin SQLite, sensores ni rutas nuevas. |
 | `src/services/database.ts` | Conexión/cola compartida, migración v2, registros, participantes, resúmenes y eliminación condicionada. | Único servicio de persistencia local para ambas páginas. |
 | `src/services/sync.ts` | Elegibilidad, transformación explícita, lotes de hasta cinco, validación de respuesta y marcado local. | Motor común para envíos individuales y masivos de ambos tipos. |
 | `src/services/recordOperations.ts` | Exclusión mutua observable de sincronizaciones y eliminación. | Compartido entre módulos y conservado durante la navegación. |
-| `src/services/api.ts`, `src/config/api.ts` | Transporte `CapacitorHttp`, errores/timeouts y configuración HTTPS. | FastAPI en Render; sin conexión directa a MongoDB desde la app. |
+| `src/services/api.ts`, `src/config/api.ts` | Transporte `CapacitorHttp`, errores/timeouts y configuración HTTPS; `checkApiConnectivity` ejecuta `GET /openapi.json` en modo no exclusivo. | FastAPI en Render y Test API del Sidebar; sin conexión directa a MongoDB desde la app. |
 | `src/types/sensores.ts` | `EstadoCaptura`, `MedicionSensor`, `ResultadoCaptura` con mediciones completas. | Contratos del hook y de los componentes de captura. |
 | `src/types/records.ts` | `Actividad`, `TipoRegistro`, `EstadoSync`, `Medicion`, `Registro`, `RegistroResumen` y `Participante`. | Contrato común; `Medicion` reutiliza `MedicionCompleta`, sin ejes nulos. |
 | `src/types/sync.ts` | Solicitudes y resultados HTTP de Entrenamiento/Predicción. | Contrato independiente de los campos internos SQLite. |
@@ -50,7 +51,7 @@ Hay solo **dos páginas principales**, cada una con dos vistas internas:
 - `App.tsx` declara explícitamente las cuatro rutas y la redirección de cualquier ruta desconocida a `/entrenamiento`, incluyendo `/`.
 - React Router es la fuente de verdad para la navegación. La vista activa procede de la ruta, evitando un estado local de pestaña que pueda contradecir la URL.
 - La navegación inferior cambia entre Entrenamiento y Predicción. Los controles internos de cada página enlazan sus vistas Captura y Sincronizar.
-- `AppLayout` comparte encabezado, navegación inferior, sidebar y contenido central desplazable. El botón del encabezado abre `Sidebar`; el estado abierto/cerrado vive en `AppLayout`. El panel se superpone al contenido, cierra con fondo/Escape y no altera las rutas. El evento Atrás de Android, validado en Xiaomi 11T, cierra el Sidebar cuando está abierto y, cuando está cerrado, conserva la navegación existente. El contenedor `#app-action-bar` se sitúa entre contenido y navegación; `RecordsSyncView` monta allí el botón masivo mediante `createPortal`. La barra reserva espacio en el layout y no tapa las últimas tarjetas; se oculta al desmontar la vista. Los insets de área segura se conservan.
+- `AppLayout` comparte encabezado, navegación inferior, sidebar y contenido central desplazable. El botón del encabezado abre `Sidebar`; el estado abierto/cerrado vive en `AppLayout`. El panel se superpone al contenido, cierra con fondo/Escape y no altera las rutas. El evento Atrás de Android, validado en Xiaomi 11T, cierra el Sidebar cuando está abierto y, cuando está cerrado, conserva la navegación existente. El botón Test API, validado en Xiaomi 11T, ejecuta la prueba solo al pulsarlo y muestra su resultado compacto debajo; no se ejecuta automáticamente al abrir el Sidebar ni al iniciar la aplicación. La prueba distingue éxito y error, presenta código HTTP, tiempo en milisegundos y mensaje comprensible, respeta el timeout de 60 segundos y no repite solicitudes automáticamente. El contenedor `#app-action-bar` se sitúa entre contenido y navegación; `RecordsSyncView` monta allí el botón masivo mediante `createPortal`. La barra reserva espacio en el layout y no tapa las últimas tarjetas; se oculta al desmontar la vista. Los insets de área segura se conservan.
 - Las vistas internas se componen con componentes reutilizables; no existen cuatro páginas principales ni rutas adicionales para tarjetas, resultados o pruebas técnicas.
 - La integración con el historial de Android fue validada en la tarea 3.9-B. Las rutas lógicas de esta tabla son el contrato aprobado.
 
@@ -139,14 +140,15 @@ src/
 |---|---|---|
 | Páginas | Componer la vista correspondiente a la ruta, fijar el tipo de registro y coordinar captura, guardado y consulta. | Hook, componentes y servicio SQLite existente. |
 | `AppLayout` | Estructura común, espacio de contenido activo, estado del sidebar e interceptor de Atrás. | Encabezado, navegación, sidebar, Router y callback de Atrás; sin SQL ni listeners de sensores. |
-| `shared/` | Identidad de la sección, navegación común y sidebar inicial. | Rutas, estado de `AppLayout` y Router; sin lógica HTTP/SQLite. |
+| `shared/` | Identidad de la sección, navegación común y sidebar con Test API manual; el HTTP se delega al hook/servicio. | Rutas, estado de `AppLayout`, Router y hook de conectividad; sin SQL ni sensores. |
 | `useAndroidBackNavigation` | Conectar Atrás con Router y permitir que una capa superior lo consuma antes de navegar. | Capacitor App, Router y callback de `AppLayout`; sin historial paralelo. |
+| `useApiConnectivityTest` | Ejecutar la prueba manual de conectividad y exponer sus estados visuales; no implementa transporte HTTP. | `checkApiConnectivity` y `Sidebar`; sin SQL ni sincronización. |
 | `components/capture/` | Mostrar tiempo, actividad y acciones mediante propiedades y callbacks. | Tipos de sensores/registros; sin conexión SQLite propia. |
 | `components/records/` | Presentar listas, UUID, actividad cuando corresponda, métricas y estado de sincronización. | `Registro`, `RegistroResumen` y callbacks; sin duplicar consultas SQL. |
 | Hook de captura | Suscripción a `devicemotion`, referencias, temporizadores, mediciones y resultado. | Tipos existentes y APIs del navegador; sin navegación, SQL ni red. |
 | `services/database.ts` | Persistencia, validación de entrada y lectura, serialización JSON y conexión. | Plugin SQLite y tipos existentes. |
 | `useRecordSync` / `services/sync.ts` | El hook gestiona presentación, confirmación local y refresco; el servicio valida/envía/confirma registros. | SQLite, transporte HTTP y bloqueo compartido. |
-| `services/api.ts` | Transporte y tratamiento de HTTP/red/timeout. No decide qué registros marcar. | `CapacitorHttp` y URL HTTPS configurada. |
+| `services/api.ts` | Transporte y tratamiento de HTTP/red/timeout; `checkApiConnectivity` valida OpenAPI en modo no exclusivo. No decide qué registros marcar. | `CapacitorHttp`, URL HTTPS configurada y Test API del Sidebar. |
 | `types/` | Contratos compartidos de sensores y registros. | Reutilizar las definiciones actuales en lugar de versiones por página. |
 
 ## 4. Reutilización entre módulos
@@ -263,7 +265,7 @@ Esta sección describe el cliente existente (`src/types/sync.ts`, `src/services/
 
 - `VITE_API_BASE_URL`, documentada en `.env.example`, tiene por defecto `https://ml-sensores-api.onrender.com`. `getApiUrl` exige HTTPS sin credenciales, query ni fragmento y construye la ruta del endpoint. La variable es pública y requiere recompilar para cambiar el build Android.
 - `POST /entrenamiento` y `POST /prediccion`: mismo endpoint por módulo para envío individual y masivo; cuerpo `{ "registros": [...] }`.
-- `checkApiConnectivity()` conserva la comprobación `GET /openapi.json` y verifica operaciones GET/POST de ambos módulos y GET `/prediccion/{id}` en el documento. El botón temporal fue retirado; la app no ejecuta esa comprobación automáticamente ni integra todavía el flujo de inferencia.
+- `checkApiConnectivity()` conserva la comprobación `GET /openapi.json` y verifica operaciones GET/POST de ambos módulos y GET `/prediccion/{id}` en el documento. La Corrección 2-C, validada en Xiaomi 11T, la expone en el Sidebar como Test API manual: se ejecuta solo al pulsar el botón, en modo no exclusivo para no retener el bloqueo HTTP de sincronización, y muestra su resultado dentro del panel. La validación confirmó el endpoint, los estados visuales, el cierre durante la solicitud y la no interferencia con la sincronización. La app no ejecuta esa comprobación automáticamente ni integra todavía el flujo de inferencia.
 
 ### Payload explícito
 

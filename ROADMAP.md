@@ -147,12 +147,12 @@ Revisión del agente durante la implementación: estática, sin comandos ni POST
 
 - [x] Crear `src/shared/Sidebar.tsx` con overlay, ancho aproximado de 80 %, transición horizontal y cierre por fondo/Escape.
 - [x] Convertir el icono del encabezado en botón cuadrado con animación sutil de borde y estado accesible.
-- [x] Integrar encabezado del Sidebar con icono, «ML Sensores», divisoria, Test API visual deshabilitado y créditos al pie.
+- [x] Integrar encabezado del Sidebar con icono, «ML Sensores», divisoria, Test API (visual y deshabilitado en 2-A) y créditos al pie.
 - [x] Mantener el grid preparado para dos acciones futuras; sin HTTP, sin segundo botón y sin navegación adicional.
 - [x] Confirmar en Xiaomi 11T apertura, diseño, cierre con X, cierre al tocar fuera (overlay), transición, foco, áreas seguras, créditos y ausencia de desbordamiento horizontal.
 - [x] Validar el cierre con Atrás de Android desde el Sidebar (Corrección 2-B).
 
-**Pendiente:** el Test API continúa como funcionalidad pendiente; actualmente es solo visual y está deshabilitado, sin HTTP.
+**Nota:** la habilitación funcional del Test API se registra en la Corrección 2-C.
 
 ## Corrección 2-B — Botón Atrás de Android en Sidebar
 
@@ -163,6 +163,24 @@ Revisión del agente durante la implementación: estática, sin comandos ni POST
 - [x] Con el Sidebar cerrado, se conserva la navegación/cierre anterior.
 - [x] Mantener un único listener, con limpieza al desmontar y compatibilidad con StrictMode.
 - [x] Validar en Xiaomi 11T con botón físico y gesto en Entrenamiento/Predicción; comprobar X, overlay, Escape y Atrás con el Sidebar cerrado.
+
+## Corrección 2-C — Test API funcional desde Sidebar
+
+**Estado: Completada y validada en Android.**
+
+- [x] Convertir el botón Test API en una prueba manual que ejecuta `GET /openapi.json` con la URL base configurada.
+- [x] Reutilizar `checkApiConnectivity` y `requestApi` de `src/services/api.ts`; sin endpoints nuevos, servicios HTTP duplicados ni reintentos automáticos.
+- [x] Mantener el timeout existente de 60 segundos y validar HTTP 200, JSON y estructura OpenAPI.
+- [x] Implementar estados inicial, comprobando, éxito y error dentro del Sidebar, con código HTTP, tiempo en milisegundos y mensaje comprensible.
+- [x] Distinguir en el resultado de error HTTP, timeout, red y respuesta inválida reutilizando el manejo existente de `ApiError`.
+- [x] Evitar solicitudes duplicadas y actualizaciones tras el desmontaje; la prueba no retiene el bloqueo HTTP de sincronización.
+- [x] Conservar encabezado, divisoria, grid para dos acciones, créditos, animaciones, áreas seguras y el comportamiento de Atrás.
+- [x] No modificar FastAPI, MongoDB, SQLite, sensores ni sincronización; sin dependencias nuevas.
+- [x] Validar en Xiaomi 11T: `GET /openapi.json` funciona correctamente desde el Sidebar.
+- [x] Validar en Xiaomi 11T los estados de carga, éxito, error y recuperación de conexión.
+- [x] Validar en Xiaomi 11T el cierre del Sidebar durante la solicitud, sin errores ni navegación alterada.
+- [x] Validar en Xiaomi 11T que Test API no interfiere con la sincronización de registros.
+- [x] Validar en Xiaomi 11T que la navegación y los métodos de cierre del Sidebar (X, overlay, Escape y Atrás) siguen funcionando.
 
 ## Fase 5 — Machine Learning
 
