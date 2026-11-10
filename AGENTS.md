@@ -59,10 +59,10 @@ No sustituir estas tecnologías sin aprobación.
 
 ## 5. Verificación
 
-Después de cada implementación:
+Después de cada implementación, conforme a la sección 7:
 
-1. Ejecutar las verificaciones de tipos disponibles.
-2. Ejecutar la compilación del proyecto.
+1. Indicar las verificaciones de tipos disponibles y solicitar al usuario sus resultados.
+2. Indicar la compilación del proyecto y solicitar al usuario sus resultados.
 3. Informar los errores encontrados y las correcciones realizadas.
 4. Indicar si es necesaria una prueba en Android físico.
 

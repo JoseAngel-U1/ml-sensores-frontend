@@ -30,7 +30,7 @@ Resultado de referencia: 601 mediciones válidas en 10 segundos, con frecuencia 
 
 ## Fase 3 — Interfaz y captura
 
-**Estado: Completada — tareas 3.1 a 3.9 completadas y validadas. La integración HTTP se registra en la Fase 4.**
+**Estado: Completada — tareas 3.1 a 3.9 completadas y validadas. La integración HTTP se completó posteriormente en la Fase 4.**
 
 Referencia: [docs/UI_ARCHITECTURE.md](docs/UI_ARCHITECTURE.md). Solo dos páginas principales (`TrainingPage` y `PredictionPage`), cada una con vistas internas Captura y Sincronizar. Rutas aprobadas: `/entrenamiento`, `/entrenamiento/sincronizar`, `/prediccion` y `/prediccion/sincronizar`. `App.tsx` define las rutas y redirige las desconocidas a `/entrenamiento`; `AppLayout` comparte encabezado, navegación inferior y contenido activo.
 
@@ -42,16 +42,16 @@ Referencia: [docs/UI_ARCHITECTURE.md](docs/UI_ARCHITECTURE.md). Solo dos página
 - [x] **3.5 — Incorporar cuenta regresiva de 3 segundos.** Completada y validada por el usuario. La preparación de 3 segundos funciona antes de la captura real de 10 segundos; durante la preparación no se toman mediciones. La cancelación, limpieza y reutilización funcionan correctamente, sin sesiones superpuestas.
 - [x] **3.6 — Guardado de capturas de Entrenamiento en SQLite.** Completada y validada por el usuario en Android. Se expusieron métricas numéricas y muestras completas, se rechazan las capturas incompletas y se guarda automáticamente un `Registro` con actividad obligatoria, UUID, fecha ISO y estado pendiente. Verificados el guardado, el UUID por registro, la recuperación de aproximadamente 600 mediciones y la persistencia tras reiniciar; Predicción no presentó regresiones.
 - [x] **3.7 — Integrar guardado de predicción.** Completada y validada por el usuario en Android. Se extrajo la lógica compartida a `useCaptureSave`, se reutilizó en Entrenamiento y Predicción, y se guarda automáticamente con `tipo: prediccion`, `actividad: null` y estado pendiente. Verificados UUID por registro, persistencia y recuperación de aproximadamente 600 mediciones; la regresión de Entrenamiento fue superada.
-- [x] **3.8 — Listado y gestión de registros locales para sincronización.** Completada y validada por el usuario en Android. Las vistas internas Sincronizar consultan resúmenes por tipo con `getRecordSummaries`, muestran tarjetas con UUID, fecha, duración, frecuencia, cantidad de mediciones, actividad y estado, y cubren carga, vacío, error y reintento. Se confirmó la compatibilidad de SQLite con `json_array_length()`, el filtrado por tipo, la consulta automática al entrar, la persistencia, la navegación y la ausencia de cambios en `estado_sync` o sincronización remota. Se eliminó el botón «Actualizar listado» conservando «Reintentar» para errores. `typecheck`, `lint` y `build` fueron aprobados; captura y guardado de ambos módulos no presentaron regresiones. El envío manual real queda en Fase 4.
+- [x] **3.8 — Listado y gestión de registros locales para sincronización.** Completada y validada por el usuario en Android. Las vistas internas Sincronizar consultan resúmenes por tipo con `getRecordSummaries`, muestran tarjetas con UUID, fecha, duración, frecuencia, cantidad de mediciones, actividad y estado, y cubren carga, vacío, error y reintento. Se confirmó la compatibilidad de SQLite con `json_array_length()`, el filtrado por tipo, la consulta automática al entrar, la persistencia, la navegación y la ausencia de cambios en `estado_sync` o sincronización remota. Se eliminó el botón «Actualizar listado» conservando «Reintentar» para errores. `typecheck`, `lint` y `build` fueron aprobados; captura y guardado de ambos módulos no presentaron regresiones. El envío manual real se completó posteriormente en la Fase 4 (5-D).
 - [x] **3.9 — Validación integral en Android.** Completada y validada por el usuario. La limpieza 3.9-A retiró `DatabaseTest`, `CaptureTest`, sus estilos exclusivos y `App.css`. La validación 3.9-B confirmó Entrenamiento y Predicción de extremo a extremo: captura, guardado SQLite, listados, persistencia, navegación y funcionamiento sin internet. Se conservaron los registros existentes, no se modificó el esquema SQLite y no se implementó sincronización remota.
 
 Las verificaciones de tipos, lint, build y Android de cada tarea fueron ejecutadas manualmente por el usuario. Las carpetas y componentes se crearon progresivamente, sin duplicar servicios/tipos existentes ni generar archivos vacíos.
 
 ## Fase 4 — Integración con FastAPI y MongoDB
 
-**Estado: En curso — Fases 5-D.1, 5-D.2 y 5-D.2-B probadas en Xiaomi 11T y guardadas mediante commit por el usuario. Fase 5-D.3 implementada, pendiente de validación en Android.**
+**Estado: Completada y validada en Android — Fases 5-C, 5-D.1, 5-D.2, 5-D.2-B y 5-D.3 completadas según confirmación del usuario. Sincronización de ambos módulos probada en Xiaomi 11T y almacenamiento en MongoDB verificado.**
 
-La Fase 3 quedó finalizada; la sincronización remota y la integración con el backend se abordarán en esta fase.
+La integración utiliza FastAPI desplegada en Render, conexión HTTPS y MongoDB como almacenamiento central. Typecheck, lint y build ejecutados satisfactoriamente por el usuario. La siguiente etapa pendiente es la recolección del dataset definitivo y el trabajo de Machine Learning.
 
 ### Fase 5-B — Participantes locales (numeración coordinada con el backend)
 
@@ -78,7 +78,7 @@ La numeración 5-B/5-C/5-D corresponde a las tareas coordinadas con el backend, 
 
 ### Fase 5-D.1 — Núcleo de sincronización
 
-**Implementada y verificada por el usuario con typecheck, lint y build.**
+**Completada y validada en Android (Xiaomi 11T) por el usuario, con typecheck, lint y build satisfactorios.**
 
 - [x] Tipos del contrato de sincronización en `src/types/sync.ts`.
 - [x] Servicio `src/services/sync.ts` con elegibilidad local, transformación explícita, lotes de cinco, correlación por UUID, validación de contadores y bloqueo de sincronizaciones concurrentes.
@@ -94,7 +94,7 @@ La numeración 5-B/5-C/5-D corresponde a las tareas coordinadas con el backend, 
 - [x] Barra de acción fija sobre la navegación inferior, con contenido desplazable y respeto del área segura.
 - [x] Hook reutilizable `useRecordSync` con bloqueo de dobles pulsaciones, resumen y limpieza segura al desmontar.
 - [x] Predicción envía `POST /prediccion` en lotes secuenciales de cinco mediante el servicio de 5-D.1.
-- [x] Entrenamiento conserva la estructura visual con la acción deshabilitada y una nota de próxima fase.
+- [x] En esta etapa, Entrenamiento conservó la estructura visual con la acción deshabilitada; se habilitó posteriormente en 5-D.3.
 - [x] Validación de la fase en Xiaomi 11T confirmada por el usuario; no se atribuyen resultados individuales no detallados.
 
 
@@ -106,38 +106,40 @@ La numeración 5-B/5-C/5-D corresponde a las tareas coordinadas con el backend, 
 - Eliminación local confirmada mediante `window.confirm`, condicionada por UUID, tipo y estado pendiente en SQL.
 - Bloqueo observable compartido entre envíos individuales, masivos y eliminación, incluso al navegar.
 - Tarjetas con grid de estado, nube/subida y papelera; acciones opcionales exclusivas de Sincronizar.
-- Predicción permite ambas acciones; Entrenamiento solo eliminación, con HTTP deshabilitado.
+- En esta etapa, Predicción permitió ambas acciones y Entrenamiento solo eliminación; su HTTP se habilitó en 5-D.3.
 - Validación global de la fase confirmada por el usuario. Los escenarios de respuestas, red, cancelación, concurrencia, navegación y alineación se conservan como referencia de regresión.
 - Sin POST reales durante la implementación del agente.
 
 ### Fase 5-D.3 — Sincronización de Entrenamiento
 
-**Implementada, pendiente de validación en Android.**
+**Completada y validada en Android (Xiaomi 11T) por el usuario. Almacenamiento en MongoDB verificado.**
 
 - [x] Habilitar Entrenamiento en `useRecordSync` y `RecordsSyncView`, para nube individual y botón masivo fijo.
 - [x] Reutilizar `sincronizarRegistro`, `sincronizarPendientes`, transformaciones, validación y bloqueo compartido; `POST /entrenamiento`, lotes secuenciales de hasta cinco.
 - [x] Mostrar UUID y motivo de entrenamientos omitidos, sin corregir datos históricos ni asignar participantes.
 - [x] Conservar UUID, actividad, participante, fecha, métricas y todas las mediciones originales; payload explícito sin propiedades locales adicionales.
-- [ ] Validar typecheck, lint y build por el usuario.
-- [ ] Validar en Xiaomi 11T envío individual/masivo, payload, guardado/existente/fallido, red/timeout, inválidos, contador, eliminación, Predicción, navegación y persistencia.
+- [x] Typecheck, lint y build ejecutados satisfactoriamente por el usuario.
+- [x] Sincronización de Entrenamiento y Predicción probada en Xiaomi 11T; almacenamiento central en MongoDB verificado y cierre de 5-D.3 confirmado por el usuario.
 
-Revisión del agente: estática, sin comandos ni POST reales. La lectura SQLite actual sigue abortando si una fila del tipo solicitado no puede deserializarse; los históricos legibles sin participante sí se omiten y permiten enviar los demás válidos. Esperar validación antes de continuar.
+Escenarios de referencia para regresión: envío individual/masivo, payload, guardado/existente/fallido, red/timeout, inválidos, contador, eliminación, navegación y persistencia. La confirmación global no añade resultados individuales que no se hayan detallado.
+
+Revisión del agente durante la implementación: estática, sin comandos ni POST reales; la validación posterior fue realizada por el usuario. Limitación conocida: un registro SQLite corrupto podría interrumpir la consulta del módulo durante la deserialización; los históricos legibles sin participante sí se omiten y permiten enviar los demás válidos.
 
 ### Plan histórico de integración
 
-- [ ] Crear API con FastAPI.
-- [ ] Configurar MongoDB.
-- [ ] Implementar endpoints de entrenamiento y predicción.
-- [ ] Implementar sincronización manual.
-- [ ] Evitar duplicados mediante identificadores estables.
-- [ ] Comprobar funcionamiento sin conexión.
+- [x] API FastAPI disponible y desplegada en Render.
+- [x] MongoDB configurado; almacenamiento central verificado por el usuario.
+- [x] Endpoints de entrenamiento y predicción integrados.
+- [x] Sincronización manual individual y masiva en ambos módulos.
+- [x] UUID local conservado para correlación e idempotencia.
+- [x] Captura y persistencia local sin conexión validadas en 3.9; se conserva el manejo de errores de envío y los pendientes no confirmados.
 
 ## Fase 5 — Machine Learning
 
 **Estado: Pendiente**
 
 - [ ] Recolectar 90 sesiones etiquetadas: 30 por actividad.
-- [ ] Consultar y preparar los datos.
+- [ ] Consultar, preparar y analizar el dataset definitivo en Python/Jupyter.
 - [ ] Extraer características estadísticas.
 - [ ] Entrenar KNN, Random Forest y Regresión Logística.
 - [ ] Evaluar y comparar modelos.
@@ -147,8 +149,8 @@ Revisión del agente: estática, sin comandos ni POST reales. La lectura SQLite 
 
 **Estado: Pendiente**
 
-- [ ] Capturar una sesión sin etiqueta.
-- [ ] Sincronizarla con MongoDB.
+- [x] Capturar una sesión sin etiqueta (infraestructura de Predicción ya implementada).
+- [x] Sincronizarla con MongoDB (validado por el usuario).
 - [ ] Consultar registros pendientes desde Jupyter.
 - [ ] Seleccionar un registro por ID.
 - [ ] Generar y guardar su predicción.

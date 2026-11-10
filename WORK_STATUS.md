@@ -2,17 +2,53 @@
 
 ## Estado general
 
-**Etapa actual:** Fase 5-D.3 — Sincronización de Entrenamiento implementada, pendiente de validación en Android.
+**Etapa actual:** Fase 5-D.3 — Sincronización de Entrenamiento completada y validada por el usuario en Android. La integración con FastAPI y MongoDB está operativa para ambos módulos.
 
-**Estado de la tarea:** Fases 5-D.1, 5-D.2 y 5-D.2-B implementadas, probadas en Xiaomi 11T y guardadas mediante commit por el usuario. Se habilitaron las acciones HTTP individuales y masivas de Entrenamiento con la infraestructura compartida. No se ejecutaron POST reales durante esta implementación.
+**Estado de la tarea:** Fases 5-C, 5-D.1, 5-D.2, 5-D.2-B y 5-D.3 completadas y validadas en Android. El usuario confirmó typecheck, lint y build satisfactorios, sincronización de Entrenamiento y Predicción en Xiaomi 11T y almacenamiento en MongoDB verificado. Las fases anteriores 5-D.1, 5-D.2 y 5-D.2-B fueron guardadas mediante commit por el usuario, según su confirmación previa.
 
-**Siguiente acción:** el usuario ejecutará typecheck, lint y build y validará 5-D.3 en Xiaomi 11T. Esperar su confirmación antes de continuar con otra fase.
+**Siguiente acción:** recolección del dataset definitivo y preparación del trabajo en Python/Jupyter, pendientes de una nueva tarea. Esta actualización es exclusivamente documental y no inicia implementaciones.
+
+### Frontend actual
+
+- React + TypeScript + Capacitor Android.
+- Captura de acelerómetro y giroscopio para registros de Entrenamiento y Predicción.
+- Gestión de participantes y persistencia local SQLite.
+
+### Sincronización actual
+
+- API FastAPI desplegada en Render (`https://ml-sensores-api.onrender.com`), conexión HTTPS validada en Android y MongoDB como almacenamiento central.
+- Sincronización manual individual y masiva para ambos módulos, con un mismo endpoint POST por módulo: `/entrenamiento` y `/prediccion`.
+- Envío masivo automático en lotes secuenciales de hasta cinco registros por pulsación.
+- UUID local conservado para correlación e idempotencia; actualización del estado SQLite únicamente tras confirmación válida de `guardado` o `existente`.
+- Eliminación individual local restringida a registros pendientes, con confirmación del usuario; no elimina documentos de MongoDB.
+- Bloqueo compartido entre envíos individuales, masivos y eliminación, con protección ante desmontaje y peticiones nativas en curso.
+- Manejo de errores, registros omitidos y respuestas parciales: los no confirmados permanecen pendientes; una respuesta parcial válida permite continuar, mientras que errores de red o respuestas inválidas detienen los siguientes lotes.
+
+### Validación actual confirmada por el usuario
+
+- `npm run typecheck`, `npm run lint` y `npm run build`: satisfactorios.
+- Sincronización de Entrenamiento y Predicción probada en Xiaomi 11T.
+- Almacenamiento de registros en MongoDB verificado.
+- Fase 5-D.3 validada y cerrada. No se añaden fechas, versiones ni resultados individuales de pruebas no informados.
+
+### Pendientes actuales
+
+- Recolección del dataset definitivo.
+- Preparación y análisis del dataset en Python/Jupyter.
+- Entrenamiento y evaluación del modelo.
+- Flujo de inferencia mediante registros de Predicción; la captura y sincronización de esos registros ya están disponibles.
+
+### Limitación conocida
+
+Un registro SQLite corrupto podría interrumpir la consulta del módulo durante la deserialización o validación, antes de separar los registros elegibles. Los históricos legibles de Entrenamiento sin participante se omiten sin alterar sus datos y permiten enviar los demás válidos.
 
 > Nota: las referencias a `DatabaseTest` y `CaptureTest` en secciones históricas describen etapas anteriores. Ambos componentes fueron eliminados en la tarea 3.9-A y no forman parte del estado actual.
 
+Las descripciones de restricciones y funcionalidades aún pendientes dentro de etapas anteriores corresponden a ese momento histórico; el estado vigente es el resumen anterior y el cierre de 5-D.3.
+
 ## Trabajo completado
 
-### Fase 5-D.3 — Implementada, pendiente de validación en Android
+### Fase 5-D.3 — Completada y validada en Android
 
 - `src/hooks/useRecordSync.ts`: retirada la restricción `tipo !== "prediccion"`; conserva bloqueo local/global, protección al desmontar y refresco tras la operación.
 - `src/components/records/RecordsSyncView.tsx`: Entrenamiento disponible para nube individual y botón masivo fijo; retirada la nota de siguiente fase. Detalle desplegable con UUID y motivo para entrenamientos omitidos, reutilizando `resumen.omitidos`.
@@ -24,7 +60,9 @@
 
 **Verificación realizada:** revisión estática del flujo tarjeta/botón → hook → servicio → SQL, contrato y bloqueo. No se ejecutaron comandos ni POST reales.
 
-**Pendiente de validación:** `npm run typecheck`, `npm run lint`, `npm run build`, `npx cap sync android`, `npx cap open android`. En Xiaomi 11T: individual; más de cinco entrenamientos con una sola pulsación; actividad/participante y número de muestras; guardado/existente/fallido; red/timeout; históricos e inválidos; SQLite/contador; eliminación; regresión de Predicción; navegación, bloqueo entre módulos y persistencia tras reiniciar. No marcar 5-D.3 completada antes de confirmación.
+**Validación posterior confirmada por el usuario:** typecheck, lint y build satisfactorios; sincronización de Entrenamiento y Predicción probada en Xiaomi 11T y almacenamiento en MongoDB verificado. La Fase 5-D.3 queda completada y validada en Android.
+
+**Referencia para regresión:** individual; más de cinco entrenamientos con una sola pulsación; actividad/participante y número de muestras; guardado/existente/fallido; red/timeout; históricos e inválidos; SQLite/contador; eliminación; Predicción; navegación, bloqueo entre módulos y persistencia tras reiniciar. Se conserva este listado como referencia, sin atribuir resultados individuales no detallados por el usuario.
 
 ### Fase 5-D.2-B — Completada y validada en Android
 
@@ -62,15 +100,15 @@ npx cap sync android
 npx cap open android
 ```
 
-Las pruebas de integración con la API y MongoDB se harán en el Xiaomi 11T con autorización del usuario; no se ejecutaron POST reales durante la implementación.
+Las pruebas de integración posteriores fueron realizadas por el usuario en Xiaomi 11T, con almacenamiento en MongoDB verificado al cerrar 5-D.3; el agente no ejecutó POST reales durante la implementación.
 
-### Fase 5-D.1 — Completada y verificada por el usuario
+### Fase 5-D.1 — Completada y validada en Android por el usuario
 
 - `src/types/sync.ts` y `src/services/sync.ts`: contrato, elegibilidad local, transformación explícita, lotes de cinco, correlación por UUID canónico, validación de contadores, confirmaciones y bloqueo de sincronizaciones concurrentes.
 - Reenvío idempotente conservando los UUID; solo se marcan `guardado` y `existente` con `id_mongo` válido. Sin interfaz ni peticiones reales durante la implementación.
-- El usuario confirmó typecheck, lint y build correctos.
+- El usuario confirmó typecheck, lint y build correctos y validación del núcleo en Android como parte del flujo de sincronización en Xiaomi 11T.
 
-### Fase 5-C — Completada y validada por el usuario
+### Fase 5-C — Completada y validada en Android por el usuario
 
 - `.env.example` y `src/config/api.ts`: URL base `https://ml-sensores-api.onrender.com`, configurable con `VITE_API_BASE_URL` y usada por defecto si la variable no existe. Validación HTTPS sin credenciales, query ni fragmentos; construcción de rutas con `URL`.
 - `src/services/api.ts`: solicitudes explícitas de `CapacitorHttp`, estructura GET/POST reutilizable sin consumidores de sincronización. No activa el parche global de fetch. Tras retirar el diagnóstico, la comprobación GET ya no está conectada a la interfaz.
@@ -176,6 +214,10 @@ La URL predeterminada permite probar sin crear `.env`; para cambiarla, usar `.en
 - FastAPI como backend.
 - MongoDB Atlas como base de datos remota.
 - Sincronización manual de registros.
+- Un mismo endpoint POST por módulo para envío individual y masivo, mediante el arreglo `registros`.
+- Lotes secuenciales de hasta cinco registros para el envío masivo.
+- UUID local conservado para correlación e idempotencia; no se generan UUID nuevos al reenviar.
+- Eliminación local restringida a registros pendientes, con confirmación explícita y comprobación del estado en SQL.
 - Clasificación de quieto, caminando y corriendo.
 - Procesamiento y predicción desde Python/Jupyter.
 
@@ -189,7 +231,7 @@ La URL predeterminada permite probar sin crear `.env`; para cambiarla, usar `.en
 - Reutilizar reloj, controles, tarjetas, listas, servicio SQLite y tipos actuales. Entrenamiento requiere actividad; predicción almacena `null`. Ambos capturan 10 segundos, generan UUID en el dispositivo y guardan localmente como pendientes.
 - Lógica de sensores extraída de `App.tsx` a `useSensorCapture`, con conservación del funcionamiento validada por el usuario. La cuenta regresiva de 3 segundos fue añadida y validada en la tarea 3.5.
 - Tema exclusivamente claro, sin modo oscuro ni selector de temas. Fuente oficial de colores, tipografía, espaciados y estilos: `docs/design/DESIGN.md`. Capturas de las cuatro vistas: `docs/design/references/`.
-- Las vistas Sincronizar muestran los registros locales de su tipo; la sincronización manual real con FastAPI corresponde a la Fase 4.
+- En el cierre de Fase 3, las vistas Sincronizar mostraban los registros locales de su tipo; la sincronización manual real se añadió posteriormente en las fases 5-D.
 
 ### Estado real de Fase 3
 
@@ -199,7 +241,7 @@ La URL predeterminada permite probar sin crear `.env`; para cambiarla, usar `.en
 - Dependencias de navegación ya declaradas en `package.json`: `react-router-dom: ^7.18.5` y `@capacitor/app: ^8.1.2`. No se añadieron dependencias para el tema visual.
 - La tarea 3.6 expone métricas numéricas y muestras completas, rechaza capturas incompletas, guarda automáticamente con UUID, fecha y actividad fijados, y muestra estados de guardado con reintento. La tarea 3.7 extrajo esa orquestación a `useCaptureSave`, la reutiliza en Entrenamiento y Predicción y guarda las capturas de Predicción con `tipo: prediccion` y `actividad: null`. La tarea 3.8 implementa el listado local por tipo con resúmenes SQLite, tarjetas, estados, consulta automática y reintento; está completada y validada en Android.
 - La tarea 3.1 modificó hook, consumo en App y el tipo de resultado; el usuario confirmó que las pruebas funcionan correctamente. El agente no ejecutó comandos ni verificaciones de código en esa tarea.
-- Sistema de Stitch y cuatro capturas disponibles y referenciados. Functional Palette tiene prioridad definitiva; se corrigieron en el YAML los tokens `background`, `surface`, `primary`, `on-background` y `on-surface`. Los roles adicionales sin equivalencia confirmada se conservan y se interpretarán solo si se utilizan, según la sección 6 de `docs/UI_ARCHITECTURE.md`. La base visual compartida está implementada y validada; las tareas 3.4 a 3.9 también están completadas y validadas. La Fase 3 está finalizada y la siguiente etapa es la Fase 4 — Integración con FastAPI y MongoDB, pendiente de iniciar.
+- Sistema de Stitch y cuatro capturas disponibles y referenciados. Functional Palette tiene prioridad definitiva; se corrigieron en el YAML los tokens `background`, `surface`, `primary`, `on-background` y `on-surface`. Los roles adicionales sin equivalencia confirmada se conservan y se interpretarán solo si se utilizan, según la sección 6 de `docs/UI_ARCHITECTURE.md`. La base visual compartida está implementada y validada; las tareas 3.4 a 3.9 también están completadas y validadas. La Fase 3 quedó finalizada; la Fase 4 se completó posteriormente con las fases 5-B a 5-D.3.
 
 ## Validación completada
 
@@ -595,6 +637,10 @@ El usuario validó la tarea 3.7 en un dispositivo Android real: preparación de 
 
 La Fase 3 — Interfaz y captura queda finalizada. Las tareas 3.1 a 3.9 están completadas y validadas; la limpieza 3.9-A retiró las pruebas temporales y la validación 3.9-B confirmó el flujo completo en Android. No se modificó el esquema SQLite ni se implementó sincronización remota.
 
-## Siguiente etapa — Fase 4: Integración con FastAPI y MongoDB
+## Referencia histórica al cierre de Fase 3 — Fase 4: Integración con FastAPI y MongoDB
 
-**Sincronización HTTP pendiente.** Las Fases 5-B y 5-C están completadas y validadas por el usuario, dentro de la Fase 4 histórica del frontend. El diagnóstico temporal de conectividad fue retirado y la infraestructura HTTP se conserva. Después podrá abordarse la sincronización manual y los reintentos. `markAsSynced` permanece reservado para confirmar la sincronización remota. Las capturas antiguas de entrenamiento sin participante se conservan; su asociación posterior no se implementó en esta tarea.
+En la preparación de Fase 4, tras completar 5-B y 5-C, la sincronización HTTP seguía pendiente. Se había retirado el diagnóstico temporal de conectividad y conservado la infraestructura HTTP para implementar sincronización manual y reintentos. `markAsSynced` estaba reservado para confirmar la sincronización remota. Las capturas antiguas de entrenamiento sin participante se conservaron sin implementar su asociación posterior. Esta referencia histórica queda superada por el cierre de 5-D.3 documentado al inicio.
+
+## Siguiente etapa — Fase 5: Machine Learning
+
+Pendientes: dataset definitivo, preparación y análisis en Python/Jupyter, extracción de características, entrenamiento y evaluación del modelo. El flujo de inferencia mediante registros de Predicción y la demostración final permanecen pendientes en Fase 6. No se inicia ninguna de estas tareas durante esta actualización documental.

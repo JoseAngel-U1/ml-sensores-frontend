@@ -4,6 +4,8 @@
 
 El esquema original y los flujos de captura/listados fueron validados en Android. La Fase 5-B de participantes está completada y validada por el usuario en Xiaomi 11T: typecheck, lint y build correctos, aplicación compilada y ejecutada, gestión de participantes funcional y rediseño aprobado. Base nativa local, sin conexión a internet y sin almacenamiento alternativo en memoria o localStorage. La confirmación general no acredita por separado cada caso técnico del procedimiento de pruebas.
 
+Las fases 5-C a 5-D.3 también están completadas y validadas por el usuario: ambos módulos sincronizan manualmente con FastAPI/MongoDB y permiten eliminar registros locales pendientes. Estas operaciones reutilizan el esquema v2, sin nuevas migraciones.
+
 - Base: `ml_sensores`.
 - Versión objetivo: `2`, controlada mediante `PRAGMA user_version`.
 - Tablas: `registros` y `participantes`.
@@ -116,13 +118,14 @@ Archivo: `src/services/database.ts`.
 
 | Función | Resultado y comportamiento |
 |---|---|
-| `initializeDatabase()` | `Promise<void>`; abre la conexión y crea tabla/índice si faltan. |
+| `initializeDatabase()` | `Promise<void>`; abre/reutiliza la conexión, habilita claves foráneas y aplica la migración explícita cuando `user_version` es 0 o 1; verifica versión 2. |
 | `saveRecord(registro)` | `Promise<void>`; valida e inserta una instantánea del registro con estado pendiente. |
 | `getRecords()` | `Promise<Registro[]>`; lista todos por fecha descendente e ID ascendente. |
 | `getRecordSummaries(tipo)` | `Promise<RegistroResumen[]>`; lista resúmenes del tipo indicado, sin mediciones y con `totalMediciones` calculado mediante `json_array_length()`. |
-| `getPendingRecords()` | `Promise<Registro[]>`; lista únicamente pendientes. |
+| `getPendingRecords(tipo?)` | `Promise<Registro[]>`; lista pendientes, opcionalmente de un tipo. El filtro SQL se aplica antes de deserializar; sin argumento devuelve ambos tipos. |
 | `getRecordById(id)` | `Promise<Registro \| null>`; recupera por UUID o devuelve `null`. |
 | `markAsSynced(id)` | `Promise<void>`; actualiza solo el estado, falla si el UUID no existe. No realiza ninguna comunicación de red. |
+| `deletePendingRecord(tipo, id)` | `Promise<void>`; adquiere el bloqueo compartido y elimina exactamente una fila condicionada por UUID, tipo y estado pendiente; falla si ya no coincide. No realiza HTTP. |
 | `getParticipants()` | Lista `{ id, codigo }` por ID ascendente. |
 | `getNextParticipantCode()` | Obtiene el próximo código previsto sin reservarlo. |
 | `createParticipant()` | Crea y devuelve el participante con código asignado durante la escritura. |
@@ -131,6 +134,20 @@ Archivo: `src/services/database.ts`.
 Todas las operaciones inicializan la base cuando es necesario. Una única promesa comparte la inicialización concurrente; se recupera la conexión existente y se comprueba la consistencia con el plugin. Un fallo de inicialización permite reintentar. Las operaciones se encolan para evitar transacciones superpuestas, y una operación fallida no bloquea las siguientes. Los errores incluyen contexto y conservan la causa original.
 
 La conexión permanece abierta durante la sesión; cada escritura se confirma mediante la transacción del plugin. La persistencia no depende de ejecutar código al cerrar la aplicación. Android conserva el archivo en el almacenamiento privado de la app. Borrar datos o desinstalar la app elimina esa persistencia.
+
+## Sincronización y eliminación de registros
+
+- `getRecordSummaries(tipo)` devuelve todos los resúmenes del tipo; `RecordsSyncView` filtra los pendientes para sus tarjetas y contador. Los sincronizados se conservan en SQLite, aunque desaparecen de esta vista.
+- `sincronizarRegistro(tipo, idLocal)` recupera la captura completa por UUID y verifica tipo/estado; `sincronizarPendientes(tipo)` consulta exclusivamente los pendientes del módulo y envía los elegibles en lotes secuenciales de hasta cinco.
+- `src/services/sync.ts` transforma el UUID local `id` en `id_local` sin cambiar su valor; omite campos locales como `estado_sync`. Conserva fecha, métricas y todas las mediciones. Entrenamiento exige actividad y participante P-001 a P-999; Predicción envía actividad null y omite participante.
+- Solo resultados `guardado` o `existente` con UUID correlacionado e `id_mongo` válido permiten llamar a `markAsSynced`. HTTP 200 por sí solo no confirma todos los registros.
+- Los fallidos, omitidos y errores de marcado local permanecen pendientes. Una respuesta parcial válida permite continuar; red o respuesta inválida detienen los lotes restantes. El reintento manual conserva UUID para idempotencia.
+- El hook confirma la eliminación con `window.confirm`. Cancelar no borra. El servicio comprueba el estado al ejecutar `DELETE FROM registros WHERE id = ? AND tipo = ? AND estado_sync = ?`, con `pendiente` como valor, y exige una fila afectada. Las mediciones se eliminan junto con su fila; no hay borrado HTTP ni de participantes.
+- `recordOperations.ts` proporciona exclusión mutua para envíos y eliminación en ambos módulos, distinta de la cola de operaciones SQLite. El servicio de sincronización mantiene el bloqueo hasta finalizar las peticiones nativas, incluso después de un timeout de interfaz. La cola SQLite continúa serializando las lecturas/escrituras locales.
+
+**Limitación conocida:** una fila corrupta puede interrumpir la consulta del módulo al deserializar/validar, antes de separar elegibles. El filtro por tipo evita leer filas del otro módulo, pero no aísla errores entre filas del mismo módulo. Los históricos legibles sin participante sí se omiten y permiten enviar los otros válidos. No se corrigen ni completan datos automáticamente.
+
+El contrato HTTP consumido por el frontend se documenta en [UI_ARCHITECTURE.md](UI_ARCHITECTURE.md#9-contrato-http-consumido-y-flujo-de-sincronización).
 
 ## Configuración Android
 
@@ -161,12 +178,12 @@ La integración fue validada por el usuario en un dispositivo Android real:
 3. Los listados Sincronizar mostraron los resúmenes por tipo y la cantidad de mediciones.
 4. Los registros persistieron tras cerrar y reabrir la aplicación.
 5. Los registros se conservaron sin conexión a internet.
-6. No se modificó el esquema, no se borraron registros y no se implementó sincronización remota.
+6. En esa validación histórica (3.9), no se modificó el esquema, no se borraron registros y aún no se implementaba sincronización remota.
 
-La interfaz ya no incluye la sección temporal de prueba con datos sintéticos; fue retirada y eliminada en la tarea 3.9-A. `markAsSynced` permanece disponible en el servicio, sin botón que simule una sincronización real. Su ejecución real corresponde a la Fase 4 — Integración con FastAPI y MongoDB.
+La interfaz ya no incluye la sección temporal de prueba con datos sintéticos; fue retirada y eliminada en 3.9-A. Desde las fases 5-D, `markAsSynced` se utiliza tras confirmación remota válida. El usuario confirmó posteriormente la sincronización de ambos módulos en Xiaomi 11T y el almacenamiento en MongoDB; no se atribuyen resultados individuales adicionales a esa confirmación global.
 
 ## Interfaz y validación de participantes
 
 El selector aprobado utiliza una fila horizontal con desplegable nativo y dos botones de iconos (+ y papelera). Las confirmaciones de creación y eliminación continúan mediante `window.confirm`; se conservan los mensajes y el reintento existentes, sin notificaciones toast por ahora.
 
-**Fase 5-B completada y validada por el usuario.** Procedimiento de los doce casos: [PARTICIPANTS_VALIDATION.md](PARTICIPANTS_VALIDATION.md), conservado como referencia sin marcar como ejecutados casos individuales no confirmados. La siguiente etapa es Fase 5-C: conectividad HTTPS entre Android y FastAPI desplegada en Render. La sincronización HTTP sigue pendiente.
+**Fase 5-B completada y validada por el usuario.** Procedimiento de los doce casos: [PARTICIPANTS_VALIDATION.md](PARTICIPANTS_VALIDATION.md), conservado como referencia sin marcar como ejecutados casos individuales no confirmados. Conectividad y sincronización HTTP quedaron validadas posteriormente en 5-C a 5-D.3. Las siguientes tareas pendientes corresponden al dataset definitivo, Machine Learning e inferencia.

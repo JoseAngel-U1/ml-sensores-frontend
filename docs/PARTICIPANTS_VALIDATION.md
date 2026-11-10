@@ -59,4 +59,6 @@ FROM registros ORDER BY fecha;
 - Rediseño del selector: probado y aprobado por el usuario.
 - Migración sobre una instalación existente y casos 1–12 por separado: sin resultados individuales confirmados; no se registran como ejecutados o aprobados individualmente.
 
-**Cierre:** Fase 5-B completada por confirmación del usuario. Siguiente etapa: Fase 5-C — Conectividad HTTPS entre Android y FastAPI desplegada en Render. Sincronización HTTP pendiente.
+**Cierre:** Fase 5-B completada por confirmación del usuario. La conectividad y sincronización, que eran las siguientes etapas al redactar este procedimiento, quedaron implementadas y validadas en 5-C a 5-D.3. Ambos módulos permiten ahora sincronización individual/masiva y eliminación local de registros pendientes. Este procedimiento sigue siendo una referencia de regresión de participantes, no un informe de ejecución individual de sus doce casos.
+
+Para los casos que requieren inspeccionar una tarjeta, conservar la captura pendiente hasta terminar la comprobación: la vista Sincronizar ya no muestra registros sincronizados. Eliminar una captura pendiente no elimina automáticamente su participante; este solo puede eliminarse si no conserva ninguna captura local asociada, sincronizada o pendiente. Consultar [SQLITE_DESIGN.md](SQLITE_DESIGN.md) y [../WORK_STATUS.md](../WORK_STATUS.md) para el estado vigente.
