@@ -6,7 +6,9 @@
 
 **Estado de la tarea:** Fases 5-C, 5-D.1, 5-D.2, 5-D.2-B y 5-D.3 completadas y validadas en Android. El usuario confirmó typecheck, lint y build satisfactorios, sincronización de Entrenamiento y Predicción en Xiaomi 11T y almacenamiento en MongoDB verificado. Las fases anteriores 5-D.1, 5-D.2 y 5-D.2-B fueron guardadas mediante commit por el usuario, según su confirmación previa.
 
-**Siguiente acción:** recolección del dataset definitivo y preparación del trabajo en Python/Jupyter, pendientes de una nueva tarea. Esta actualización es exclusivamente documental y no inicia implementaciones.
+**Corrección UI actual:** Correcciones 2-A (Sidebar inicial) y 2-B (Atrás de Android) completadas y validadas en Xiaomi 11T. El Test API permanece pendiente: actualmente es solo visual y está deshabilitado.
+
+**Siguiente acción:** continuar con la recolección del dataset definitivo y el trabajo en Python/Jupyter. La implementación del Sidebar no modifica captura, SQLite, sensores ni sincronización; el Test API sigue pendiente y deshabilitado.
 
 ### Frontend actual
 
@@ -14,6 +16,8 @@
 - Captura de acelerómetro y giroscopio para registros de Entrenamiento y Predicción.
 - Gestión de participantes y persistencia local SQLite.
 - Orientación vertical bloqueada de forma nativa en `AndroidManifest.xml`; validada por el usuario en Xiaomi 11T.
+- Sidebar inicial implementado y validado en Android; el Test API permanece pendiente, exclusivamente visual y deshabilitado.
+- El evento Atrás de Android cierra el Sidebar cuando está abierto; con el Sidebar cerrado se conserva la navegación existente. Implementado y validado en Android.
 
 ### Sincronización actual
 
@@ -31,10 +35,12 @@
 - Sincronización de Entrenamiento y Predicción probada en Xiaomi 11T.
 - Almacenamiento de registros en MongoDB verificado.
 - Orientación vertical bloqueada validada en Xiaomi 11T.
+- Sidebar inicial y Atrás de Android: Correcciones 2-A y 2-B validadas satisfactoriamente en Xiaomi 11T.
 - Fase 5-D.3 validada y cerrada. No se añaden fechas, versiones ni resultados individuales de pruebas no informados.
 
 ### Pendientes actuales
 
+- Test API funcional; actualmente es solo visual y está deshabilitado.
 - Recolección del dataset definitivo.
 - Preparación y análisis del dataset en Python/Jupyter.
 - Entrenamiento y evaluación del modelo.
@@ -46,7 +52,7 @@ Un registro SQLite corrupto podría interrumpir la consulta del módulo durante 
 
 > Nota: las referencias a `DatabaseTest` y `CaptureTest` en secciones históricas describen etapas anteriores. Ambos componentes fueron eliminados en la tarea 3.9-A y no forman parte del estado actual.
 
-Las descripciones de restricciones y funcionalidades aún pendientes dentro de etapas anteriores corresponden a ese momento histórico; el estado vigente es el resumen anterior y el cierre de 5-D.3.
+Las descripciones de restricciones y funcionalidades aún pendientes dentro de etapas anteriores corresponden a ese momento histórico; el estado vigente es el resumen anterior, la corrección UI actual y el cierre de 5-D.3.
 
 ## Trabajo completado
 
@@ -55,6 +61,23 @@ Las descripciones de restricciones y funcionalidades aún pendientes dentro de e
 - `android/app/src/main/AndroidManifest.xml`: añadido `android:screenOrientation="portrait"` a la actividad principal `.MainActivity`.
 - Se conserva `android:configChanges` y el resto de la configuración nativa. No se modificó `MainActivity.java`, Capacitor, sensores, SQLite, FastAPI ni MongoDB.
 - Validación confirmada por el usuario en Xiaomi 11T: la aplicación permanece vertical al girar el dispositivo. La corrección queda completada y validada.
+
+### Corrección 2-A — Sidebar inicial (completada y validada en Android)
+
+- `src/shared/Sidebar.tsx`: drawer lateral con overlay, cierre por fondo/Escape, gestión de foco, encabezado con icono y «ML Sensores», divisoria, Test API visual deshabilitado y créditos al pie.
+- `src/shared/Header.tsx`: el icono decorativo pasa a botón cuadrado que abre el Sidebar, con `aria-expanded`, `aria-controls` y animación sutil de borde.
+- `src/layouts/AppLayout.tsx`: estado abierto/cerrado y renderizado del Sidebar; no se alteran rutas, captura, SQLite, sensores ni sincronización.
+- `src/index.css`: estilos responsive, overlay, transición horizontal, áreas seguras, foco visible y soporte de movimiento reducido.
+- El Test API permanece pendiente: es solo visual y está deshabilitado; no ejecuta HTTP ni usa `/openapi.json`. No se añadió el segundo botón ni navegación a todos los registros. Sin selector de tema, dependencias ni commits.
+- Validación física completada en Xiaomi 11T: apertura, diseño, cierre con X, cierre al tocar fuera (overlay), transición, foco, áreas seguras, créditos y ausencia de desbordamiento.
+- Validación final completada en Xiaomi 11T, incluyendo el cierre con Atrás de Android.
+
+### Corrección 2-B — Atrás de Android en Sidebar (completada y validada en Android)
+
+- `src/hooks/useAndroidBackNavigation.ts`: añade un interceptor opcional antes de navegar; si devuelve `true`, consume Atrás y evita `navigate(-1)` o `exitApp`. Conserva un único listener, la bandera `active` y la limpieza asíncrona al desmontar.
+- `src/layouts/AppLayout.tsx`: el interceptor cierra el Sidebar solo cuando está abierto y devuelve `true`; si está cerrado, devuelve `false` y mantiene la navegación existente.
+- No se modifica el historial, las rutas, el Sidebar, el Header, Test API, SQLite, sensores, sincronización, FastAPI ni MongoDB. Sin dependencias nuevas ni commits.
+- Validación física completada en Xiaomi 11T con botón y gesto Atrás en Entrenamiento y Predicción; X, overlay, Escape y Atrás con el Sidebar cerrado confirmados.
 
 ### Fase 5-D.3 — Completada y validada en Android
 

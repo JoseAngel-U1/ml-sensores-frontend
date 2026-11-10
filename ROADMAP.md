@@ -141,6 +141,29 @@ Revisión del agente durante la implementación: estática, sin comandos ni POST
 - [x] Añadir `android:screenOrientation="portrait"` a la actividad principal en `android/app/src/main/AndroidManifest.xml`.
 - [x] Validar en Xiaomi 11T que la interfaz permanece vertical al girar, navegando entre pantallas y con captura/sincronización; confirmado por el usuario.
 
+## Corrección 2-A — Sidebar inicial
+
+**Estado: Completada y validada en Android.**
+
+- [x] Crear `src/shared/Sidebar.tsx` con overlay, ancho aproximado de 80 %, transición horizontal y cierre por fondo/Escape.
+- [x] Convertir el icono del encabezado en botón cuadrado con animación sutil de borde y estado accesible.
+- [x] Integrar encabezado del Sidebar con icono, «ML Sensores», divisoria, Test API visual deshabilitado y créditos al pie.
+- [x] Mantener el grid preparado para dos acciones futuras; sin HTTP, sin segundo botón y sin navegación adicional.
+- [x] Confirmar en Xiaomi 11T apertura, diseño, cierre con X, cierre al tocar fuera (overlay), transición, foco, áreas seguras, créditos y ausencia de desbordamiento horizontal.
+- [x] Validar el cierre con Atrás de Android desde el Sidebar (Corrección 2-B).
+
+**Pendiente:** el Test API continúa como funcionalidad pendiente; actualmente es solo visual y está deshabilitado, sin HTTP.
+
+## Corrección 2-B — Botón Atrás de Android en Sidebar
+
+**Estado: Completada y validada en Android.**
+
+- [x] Integrar el evento `backButton` de Capacitor con el estado del Sidebar mediante un interceptor opcional en `useAndroidBackNavigation`.
+- [x] Con el Sidebar abierto, Atrás lo cierra sin navegar, salir ni modificar el historial.
+- [x] Con el Sidebar cerrado, se conserva la navegación/cierre anterior.
+- [x] Mantener un único listener, con limpieza al desmontar y compatibilidad con StrictMode.
+- [x] Validar en Xiaomi 11T con botón físico y gesto en Entrenamiento/Predicción; comprobar X, overlay, Escape y Atrás con el Sidebar cerrado.
+
 ## Fase 5 — Machine Learning
 
 **Estado: Pendiente**

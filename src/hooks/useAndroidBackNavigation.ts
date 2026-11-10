@@ -1,11 +1,16 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Capacitor } from "@capacitor/core";
 import { App } from "@capacitor/app";
 import { useNavigate } from "react-router-dom";
 
-/** Conecta Atrás físico con el historial del Router, sin crear un historial paralelo. */
-export function useAndroidBackNavigation(): void {
+/** Conecta Atrás físico con el historial del Router; un interceptor opcional puede consumirlo antes de navegar. */
+export function useAndroidBackNavigation(manejarAtras?: () => boolean): void {
   const navigate = useNavigate();
+  const manejarAtrasRef = useRef(manejarAtras);
+
+  useEffect(() => {
+    manejarAtrasRef.current = manejarAtras;
+  }, [manejarAtras]);
 
   useEffect(() => {
     if (Capacitor.getPlatform() !== "android") return;
@@ -13,6 +18,9 @@ export function useAndroidBackNavigation(): void {
     let active = true;
     const listener = App.addListener("backButton", ({ canGoBack }) => {
       if (!active) return;
+
+      if (manejarAtrasRef.current?.()) return;
+
       if (canGoBack) {
         void navigate(-1);
       } else {

@@ -6,6 +6,8 @@ Arquitectura aprobada e implementada. La Fase 3 está completada y validada en A
 
 La arquitectura de Fase 3 se amplió con participantes (5-B) y conectividad/sincronización (5-C a 5-D.3), completadas y validadas por el usuario en Xiaomi 11T. Las vistas «Sincronizar» muestran exclusivamente pendientes de su módulo y permiten envío individual/masivo y eliminación local. FastAPI está desplegada en Render y el almacenamiento en MongoDB fue verificado por el usuario. Dataset definitivo, entrenamiento del modelo e inferencia permanecen pendientes.
 
+El Sidebar inicial (Corrección 2-A) y el cierre con Atrás de Android (Corrección 2-B) están completados y validados en Xiaomi 11T. La apertura, el diseño, el cierre con X, el cierre al tocar fuera, la transición, el foco, las áreas seguras, los créditos y la ausencia de desbordamiento horizontal fueron confirmados; Atrás cierra el Sidebar abierto sin navegar ni salir y conserva el historial cuando está cerrado. Se abre desde el botón del encabezado, usa overlay y cierre por fondo/Escape, contiene el Test API exclusivamente visual (deshabilitado, sin HTTP), que permanece pendiente, y los créditos. No incluye cambio de tema ni navegación a todos los registros.
+
 ## 1. Inventario actual y reutilización
 
 | Archivo | Responsabilidad actual | Uso |
@@ -17,6 +19,8 @@ La arquitectura de Fase 3 se amplió con participantes (5-B) y conectividad/sinc
 | `src/hooks/useRecordSummaries.ts` | Consulta resúmenes por tipo, carga, error y reintento. | Listados de las vistas Sincronizar; validado. |
 | `src/hooks/useParticipants.ts` | Consulta, selección, creación y eliminación de participantes con confirmación. | Captura de Entrenamiento. |
 | `src/hooks/useRecordSync.ts` | Envío individual/masivo, confirmación de eliminación, errores y refresco; observa bloqueo global. | Vistas Sincronizar de ambos módulos. |
+| `src/hooks/useAndroidBackNavigation.ts` | Escucha `backButton` de Capacitor, permite un interceptor previo y conserva el historial cuando no se consume; validado en Android. | `AppLayout` y Router; sin historial paralelo. |
+| `src/shared/Sidebar.tsx` | Drawer lateral reutilizable: overlay, cierre por fondo/Escape, gestión de foco, Test API visual deshabilitado (pendiente) y créditos. | `AppLayout`; sin HTTP, SQLite, sensores ni rutas nuevas. |
 | `src/services/database.ts` | Conexión/cola compartida, migración v2, registros, participantes, resúmenes y eliminación condicionada. | Único servicio de persistencia local para ambas páginas. |
 | `src/services/sync.ts` | Elegibilidad, transformación explícita, lotes de hasta cinco, validación de respuesta y marcado local. | Motor común para envíos individuales y masivos de ambos tipos. |
 | `src/services/recordOperations.ts` | Exclusión mutua observable de sincronizaciones y eliminación. | Compartido entre módulos y conservado durante la navegación. |
@@ -46,7 +50,7 @@ Hay solo **dos páginas principales**, cada una con dos vistas internas:
 - `App.tsx` declara explícitamente las cuatro rutas y la redirección de cualquier ruta desconocida a `/entrenamiento`, incluyendo `/`.
 - React Router es la fuente de verdad para la navegación. La vista activa procede de la ruta, evitando un estado local de pestaña que pueda contradecir la URL.
 - La navegación inferior cambia entre Entrenamiento y Predicción. Los controles internos de cada página enlazan sus vistas Captura y Sincronizar.
-- `AppLayout` comparte encabezado, navegación inferior y contenido central desplazable. El contenedor `#app-action-bar` se sitúa entre contenido y navegación; `RecordsSyncView` monta allí el botón masivo mediante `createPortal`. La barra reserva espacio en el layout y no tapa las últimas tarjetas; se oculta al desmontar la vista. Los insets de área segura se conservan.
+- `AppLayout` comparte encabezado, navegación inferior, sidebar y contenido central desplazable. El botón del encabezado abre `Sidebar`; el estado abierto/cerrado vive en `AppLayout`. El panel se superpone al contenido, cierra con fondo/Escape y no altera las rutas. El evento Atrás de Android, validado en Xiaomi 11T, cierra el Sidebar cuando está abierto y, cuando está cerrado, conserva la navegación existente. El contenedor `#app-action-bar` se sitúa entre contenido y navegación; `RecordsSyncView` monta allí el botón masivo mediante `createPortal`. La barra reserva espacio en el layout y no tapa las últimas tarjetas; se oculta al desmontar la vista. Los insets de área segura se conservan.
 - Las vistas internas se componen con componentes reutilizables; no existen cuatro páginas principales ni rutas adicionales para tarjetas, resultados o pruebas técnicas.
 - La integración con el historial de Android fue validada en la tarea 3.9-B. Las rutas lógicas de esta tabla son el contrato aprobado.
 
@@ -58,6 +62,7 @@ flowchart TD
     Unknown[Raíz o ruta desconocida] --> Redirect[Redirección a /entrenamiento]
     Redirect --> TC
     Layout --> Header[Encabezado]
+    Header -->|abre| Sidebar[Sidebar inicial]
     Layout --> Content[Espacio de contenido activo]
     Layout --> Nav[Navegación inferior]
     Layout --> Action[Barra de acción de Sincronizar mediante portal]
@@ -94,6 +99,7 @@ src/
 │   └── AppLayout.tsx
 ├── shared/
 │   ├── Header.tsx
+│   ├── Sidebar.tsx
 │   └── BottomNavigation.tsx
 ├── components/
 │   ├── capture/
@@ -132,8 +138,9 @@ src/
 | Elemento | Responsabilidad | Dependencias |
 |---|---|---|
 | Páginas | Componer la vista correspondiente a la ruta, fijar el tipo de registro y coordinar captura, guardado y consulta. | Hook, componentes y servicio SQLite existente. |
-| `AppLayout` | Estructura común y espacio de contenido activo. | Encabezado, navegación y Router; sin SQL ni listeners de sensores. |
-| `shared/` | Identidad de la sección y navegación común a las dos páginas. | Rutas y estado activo de Router. |
+| `AppLayout` | Estructura común, espacio de contenido activo, estado del sidebar e interceptor de Atrás. | Encabezado, navegación, sidebar, Router y callback de Atrás; sin SQL ni listeners de sensores. |
+| `shared/` | Identidad de la sección, navegación común y sidebar inicial. | Rutas, estado de `AppLayout` y Router; sin lógica HTTP/SQLite. |
+| `useAndroidBackNavigation` | Conectar Atrás con Router y permitir que una capa superior lo consuma antes de navegar. | Capacitor App, Router y callback de `AppLayout`; sin historial paralelo. |
 | `components/capture/` | Mostrar tiempo, actividad y acciones mediante propiedades y callbacks. | Tipos de sensores/registros; sin conexión SQLite propia. |
 | `components/records/` | Presentar listas, UUID, actividad cuando corresponda, métricas y estado de sincronización. | `Registro`, `RegistroResumen` y callbacks; sin duplicar consultas SQL. |
 | Hook de captura | Suscripción a `devicemotion`, referencias, temporizadores, mediciones y resultado. | Tipos existentes y APIs del navegador; sin navegación, SQL ni red. |
