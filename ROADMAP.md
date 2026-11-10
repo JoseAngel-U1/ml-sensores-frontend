@@ -30,7 +30,7 @@ Resultado de referencia: 601 mediciones válidas en 10 segundos, con frecuencia 
 
 ## Fase 3 — Interfaz y captura
 
-**Estado: Completada — tareas 3.1 a 3.9 completadas y validadas. La preparación de Fase 4 incorpora participantes locales en Fase 5-B, completada y validada por el usuario; la sincronización manual de Predicción (5-D.2) está implementada y pendiente de validación en Android.**
+**Estado: Completada — tareas 3.1 a 3.9 completadas y validadas. La integración HTTP se registra en la Fase 4.**
 
 Referencia: [docs/UI_ARCHITECTURE.md](docs/UI_ARCHITECTURE.md). Solo dos páginas principales (`TrainingPage` y `PredictionPage`), cada una con vistas internas Captura y Sincronizar. Rutas aprobadas: `/entrenamiento`, `/entrenamiento/sincronizar`, `/prediccion` y `/prediccion/sincronizar`. `App.tsx` define las rutas y redirige las desconocidas a `/entrenamiento`; `AppLayout` comparte encabezado, navegación inferior y contenido activo.
 
@@ -49,7 +49,7 @@ Las verificaciones de tipos, lint, build y Android de cada tarea fueron ejecutad
 
 ## Fase 4 — Integración con FastAPI y MongoDB
 
-**Estado: En preparación — Fases 5-B y 5-C completadas y validadas por el usuario en Android. Núcleo de sincronización (5-D.1) verificado por el usuario; sincronización manual de Predicción (5-D.2) implementada y pendiente de validación en Android.**
+**Estado: En curso — Fases 5-D.1, 5-D.2 y 5-D.2-B probadas en Xiaomi 11T y guardadas mediante commit por el usuario. Fase 5-D.3 implementada, pendiente de validación en Android.**
 
 La Fase 3 quedó finalizada; la sincronización remota y la integración con el backend se abordarán en esta fase.
 
@@ -74,7 +74,7 @@ Implementación en código: tabla `participantes`, secuencia persistente, migrac
 
 No se atribuyen resultados individuales a typecheck/lint/build, pruebas sin conexión, timeout o comparación Wi-Fi/datos móviles que no hayan sido confirmados. La limpieza del diagnóstico se revisó estáticamente.
 
-La numeración 5-B/5-C corresponde a las tareas coordinadas con el backend, dentro de la Fase 4 histórica del frontend. No reemplaza la Fase 5 de Machine Learning que figura más adelante. La sincronización manual de Predicción quedó implementada en 5-D.2 y pendiente de validación en Android.
+La numeración 5-B/5-C/5-D corresponde a las tareas coordinadas con el backend, dentro de la Fase 4 histórica del frontend. No reemplaza la Fase 5 de Machine Learning que figura más adelante.
 
 ### Fase 5-D.1 — Núcleo de sincronización
 
@@ -95,20 +95,33 @@ La numeración 5-B/5-C corresponde a las tareas coordinadas con el backend, dent
 - [x] Hook reutilizable `useRecordSync` con bloqueo de dobles pulsaciones, resumen y limpieza segura al desmontar.
 - [x] Predicción envía `POST /prediccion` en lotes secuenciales de cinco mediante el servicio de 5-D.1.
 - [x] Entrenamiento conserva la estructura visual con la acción deshabilitada y una nota de próxima fase.
-- [ ] Validación en Xiaomi 11T: una y varias predicciones, más de cinco, respuestas parciales, error de red, doble pulsación, navegación durante el envío y persistencia tras reiniciar.
+- [x] Validación de la fase en Xiaomi 11T confirmada por el usuario; no se atribuyen resultados individuales no detallados.
 
 
 ### Fase 5-D.2-B — Acciones individuales en pendientes
 
-**Implementada; pendiente de typecheck, lint, build y validación en Android.**
+**Completada y validada en Android (Xiaomi 11T), según confirmación del usuario; guardada mediante commit.**
 
 - Sincronización por UUID reutilizando el procesador de lotes y sus validaciones; masiva conserva lotes de cinco.
 - Eliminación local confirmada mediante `window.confirm`, condicionada por UUID, tipo y estado pendiente en SQL.
 - Bloqueo observable compartido entre envíos individuales, masivos y eliminación, incluso al navegar.
 - Tarjetas con grid de estado, nube/subida y papelera; acciones opcionales exclusivas de Sincronizar.
 - Predicción permite ambas acciones; Entrenamiento solo eliminación, con HTTP deshabilitado.
-- Pendiente: respuestas guardado/existente/fallido, red, cancelación/error de eliminación, doble pulsación, navegación, contador, vacío y alineación en Xiaomi 11T.
-- Esperar aprobación antes de Fase 5-D.3. Sin POST reales durante la implementación.
+- Validación global de la fase confirmada por el usuario. Los escenarios de respuestas, red, cancelación, concurrencia, navegación y alineación se conservan como referencia de regresión.
+- Sin POST reales durante la implementación del agente.
+
+### Fase 5-D.3 — Sincronización de Entrenamiento
+
+**Implementada, pendiente de validación en Android.**
+
+- [x] Habilitar Entrenamiento en `useRecordSync` y `RecordsSyncView`, para nube individual y botón masivo fijo.
+- [x] Reutilizar `sincronizarRegistro`, `sincronizarPendientes`, transformaciones, validación y bloqueo compartido; `POST /entrenamiento`, lotes secuenciales de hasta cinco.
+- [x] Mostrar UUID y motivo de entrenamientos omitidos, sin corregir datos históricos ni asignar participantes.
+- [x] Conservar UUID, actividad, participante, fecha, métricas y todas las mediciones originales; payload explícito sin propiedades locales adicionales.
+- [ ] Validar typecheck, lint y build por el usuario.
+- [ ] Validar en Xiaomi 11T envío individual/masivo, payload, guardado/existente/fallido, red/timeout, inválidos, contador, eliminación, Predicción, navegación y persistencia.
+
+Revisión del agente: estática, sin comandos ni POST reales. La lectura SQLite actual sigue abortando si una fila del tipo solicitado no puede deserializarse; los históricos legibles sin participante sí se omiten y permiten enviar los demás válidos. Esperar validación antes de continuar.
 
 ### Plan histórico de integración
 

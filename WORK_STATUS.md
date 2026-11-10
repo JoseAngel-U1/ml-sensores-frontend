@@ -2,17 +2,31 @@
 
 ## Estado general
 
-**Etapa actual:** Fase 5-D.2-B — Sincronización individual y eliminación local, implementada y pendiente de validación en Android. La Fase 5-D.2 fue validada exitosamente por el usuario en Xiaomi 11T.
+**Etapa actual:** Fase 5-D.3 — Sincronización de Entrenamiento implementada, pendiente de validación en Android.
 
-**Estado de la tarea:** El núcleo de sincronización de la Fase 5-D.1 fue verificado por el usuario con typecheck, lint y build. La Fase 5-D.2 conecta Predicción con `POST /prediccion`, muestra solo pendientes y añade una barra de acción fija sobre la navegación. La Fase 5-B y la Fase 5-C permanecen completadas y validadas. No se envió Entrenamiento ni se ejecutaron peticiones reales durante la implementación.
+**Estado de la tarea:** Fases 5-D.1, 5-D.2 y 5-D.2-B implementadas, probadas en Xiaomi 11T y guardadas mediante commit por el usuario. Se habilitaron las acciones HTTP individuales y masivas de Entrenamiento con la infraestructura compartida. No se ejecutaron POST reales durante esta implementación.
 
-**Siguiente acción:** ejecutar typecheck, lint y build; validar acciones individuales en Xiaomi 11T y esperar aprobación antes de Fase 5-D.3.
+**Siguiente acción:** el usuario ejecutará typecheck, lint y build y validará 5-D.3 en Xiaomi 11T. Esperar su confirmación antes de continuar con otra fase.
 
 > Nota: las referencias a `DatabaseTest` y `CaptureTest` en secciones históricas describen etapas anteriores. Ambos componentes fueron eliminados en la tarea 3.9-A y no forman parte del estado actual.
 
 ## Trabajo completado
 
-### Fase 5-D.2-B — Implementada, pendiente de validación en Android
+### Fase 5-D.3 — Implementada, pendiente de validación en Android
+
+- `src/hooks/useRecordSync.ts`: retirada la restricción `tipo !== "prediccion"`; conserva bloqueo local/global, protección al desmontar y refresco tras la operación.
+- `src/components/records/RecordsSyncView.tsx`: Entrenamiento disponible para nube individual y botón masivo fijo; retirada la nota de siguiente fase. Detalle desplegable con UUID y motivo para entrenamientos omitidos, reutilizando `resumen.omitidos`.
+- Servicio reutilizado sin duplicaciones ni cambios: `sincronizarRegistro("entrenamiento", idLocal)` / `sincronizarPendientes("entrenamiento")`, `validarElegibilidadLocal`, `transformarEntrenamiento`, `construirLotes`, `validarYCorrelacionarRespuesta` y `markAsSynced`.
+- Payload verificado estáticamente: `id_local` original, tipo literal, actividad permitida, participante P-001 a P-999 (regla existente), fecha válida, métricas positivas finitas y todas las muestras con tiempo no negativo y seis ejes finitos. Construcción explícita sin `id`, `estado_sync` ni campos adicionales; no transforma valores de muestras.
+- Se mantiene `conBloqueoRegistros` para ambos módulos y eliminación, incluida la espera de finalización HTTP nativa tras timeout. Solo confirmaciones válidas guardado/existente permiten marcar; fallidos permanecen pendientes y una respuesta parcial válida permite continuar; red/respuesta inválida detienen los siguientes lotes.
+- Históricos sin participante se omiten, permanecen pendientes y no bloquean otros registros elegibles. Limitación existente: errores de deserialización/validación SQLite pueden abortar toda la lectura del tipo solicitado, antes de separar elegibles; se informa el error sin modificar datos.
+- Predicción conserva su diseño y flujo. Sin cambios en SQLite, sensores, participantes, backend, estilos, dependencias ni UUID. Sin commits/push del agente.
+
+**Verificación realizada:** revisión estática del flujo tarjeta/botón → hook → servicio → SQL, contrato y bloqueo. No se ejecutaron comandos ni POST reales.
+
+**Pendiente de validación:** `npm run typecheck`, `npm run lint`, `npm run build`, `npx cap sync android`, `npx cap open android`. En Xiaomi 11T: individual; más de cinco entrenamientos con una sola pulsación; actividad/participante y número de muestras; guardado/existente/fallido; red/timeout; históricos e inválidos; SQLite/contador; eliminación; regresión de Predicción; navegación, bloqueo entre módulos y persistencia tras reiniciar. No marcar 5-D.3 completada antes de confirmación.
+
+### Fase 5-D.2-B — Completada y validada en Android
 
 - Nuevo `src/services/recordOperations.ts`: exclusión mutua observable por `useSyncExternalStore`; rechaza operaciones concurrentes y libera en `finally`. Envíos retienen el bloqueo hasta terminar la petición nativa incluso tras un timeout de interfaz.
 - `sync.ts`: `sincronizarRegistro(tipo, idLocal)` consulta el registro completo, comprueba tipo y estado, y reutiliza elegibilidad, transformación, validación de respuesta y marcado del mismo procesador que la sincronización masiva. Envía un único elemento; la masiva mantiene lotes de cinco.
@@ -24,7 +38,7 @@
 
 **Revisión realizada:** inspección estática de imports, consultas SQL, bloqueo compartido, rutas de error y consumidores de componentes. Sin comandos, POST reales, instalaciones ni cambios en backend/sensores.
 
-**Pendiente de usuario:** typecheck/lint/build y casos Android: guardado, existente, fallido, red, eliminación/cancelación/error SQLite, doble pulsación y exclusión individual/masiva/eliminación, navegación durante envío, contador/vacío, alineación en pantalla pequeña y tarjetas sin acciones fuera de Sincronizar. No se atribuyen pruebas ejecutadas a esta revisión.
+**Validación confirmada por el usuario:** fase probada en Xiaomi 11T y guardada mediante commit. Los casos de respuestas, red, eliminación, concurrencia, navegación y alineación quedan como referencia de regresión; no se inventan resultados individuales no detallados. El HTTP de Entrenamiento deshabilitado descrito arriba corresponde a esta etapa histórica, habilitado ahora en 5-D.3.
 
 ### Fase 5-D.2 — Completada y validada por el usuario en Xiaomi 11T
 
@@ -36,7 +50,7 @@
 - `src/layouts/AppLayout.tsx` y `src/index.css`: el layout pasa a una estructura de altura completa con contenido central desplazable y navegación inferior fija. La vista monta su barra de acción en un contenedor dedicado entre el contenido y la navegación mediante un portal de React, sin posiciones absolutas ni superposición; el contenedor se oculta cuando está vacío.
 - No se modificó el esquema SQLite, no se instalaron dependencias, no se alteró la captura de sensores, no se eliminaron registros ni se cambiaron UUID. No se ejecutaron peticiones POST reales ni comandos de terminal.
 
-**Pendiente:** typecheck, lint y build por el usuario; después validación en Xiaomi 11T de una predicción, varias, más de cinco, sin pendientes, respuestas parciales, error de red, doble pulsación, navegación durante el envío, persistencia tras reiniciar y posición fija del botón durante el desplazamiento.
+**Validación confirmada por el usuario:** Fase 5-D.2 probada exitosamente en Xiaomi 11T y guardada mediante commit. La lista de escenarios de esta etapa se conserva como referencia de regresión.
 
 **Comandos de referencia para la validación**, desde `ml-sensores/`, continuando solo si cada paso termina correctamente:
 

@@ -23,8 +23,8 @@ const TEXTOS: Record<TipoRegistro, TextosVista> = {
     titulo: "Entrenamientos pendientes",
     descripcion: "Capturas de entrenamiento guardadas localmente que todavía no se han enviado. Solo se muestran los registros pendientes.",
     vacio: "No hay entrenamientos pendientes de sincronizar.",
-    disponible: false,
-    nota: "El envío de entrenamientos se habilitará en la siguiente fase.",
+    disponible: true,
+    nota: null,
   },
   prediccion: {
     titulo: "Predicciones pendientes",
@@ -89,6 +89,18 @@ function ResumenEnvio({ resumen, restantes }: { resumen: ResumenSincronizacion; 
         <p className="records-sync__note">
           Hay registros con datos locales incompletos que no se enviaron y siguen pendientes.
         </p>
+      )}
+      {resumen.tipo === "entrenamiento" && resumen.omitidos.length > 0 && (
+        <details className="records-sync__note">
+          <summary>Ver motivos de los entrenamientos no enviados</summary>
+          <ul>
+            {resumen.omitidos.map((omitido) => (
+              <li key={omitido.id}>
+                <code>{omitido.id}</code>: {omitido.motivo}
+              </li>
+            ))}
+          </ul>
+        </details>
       )}
       {resumen.erroresMarcado.length > 0 && (
         <p className="records-sync__warning" role="alert">

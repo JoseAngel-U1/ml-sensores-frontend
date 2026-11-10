@@ -55,7 +55,7 @@ export function useRecordSync({ tipo, onFinalizado }: UseRecordSyncOptions): Use
 
   const sincronizar = useCallback(async (idLocal?: string): Promise<void> => {
     // El bloqueo se activa de forma síncrona para ignorar dobles pulsaciones.
-    if (enCursoRef.current || hayOperacionRegistros() || tipo !== "prediccion") return;
+    if (enCursoRef.current || hayOperacionRegistros()) return;
     enCursoRef.current = true;
     if (montadoRef.current) {
       setSincronizando(true);
