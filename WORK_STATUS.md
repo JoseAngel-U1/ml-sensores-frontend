@@ -8,9 +8,13 @@
 
 **Corrección UI actual:** Correcciones 2-A (Sidebar inicial), 2-B (Atrás de Android) y 2-C (Test API funcional) completadas y validadas en Xiaomi 11T. Test API ya no es solo visual: es una prueba manual de conectividad HTTPS.
 
-**Siguiente acción:** continuar con la recolección del dataset definitivo y el trabajo en Python/Jupyter. La implementación del Sidebar y Test API no modifica captura, SQLite, sensores ni sincronización.
+**Corrección 2-D:** selector de tema claro/oscuro completado y validado en Android (Xiaomi 11T), según confirmación del usuario. Paleta oscura ajustada manualmente a verdes menos saturados y superficies de gris carbón.
+
+**Siguiente acción:** continuar con la recolección del dataset definitivo y el trabajo en Python/Jupyter.
 
 ### Frontend actual
+
+- Selector claro/oscuro desde el Sidebar completado y validado en Xiaomi 11T. Persiste mediante `localStorage` con la clave `ml-sensores-tema` y aplica la preferencia al arrancar; claro por defecto y sin modificaciones visuales. El oscuro conserva tipografía, estructura, dimensiones y espaciados del claro.
 
 - React + TypeScript + Capacitor Android.
 - Captura de acelerómetro y giroscopio para registros de Entrenamiento y Predicción.
@@ -31,6 +35,8 @@
 
 ### Validación actual confirmada por el usuario
 
+- Corrección 2-D completada y validada en Android: selector claro/oscuro probado satisfactoriamente en Xiaomi 11T. El usuario ajustó manualmente la paleta oscura de `src/index.css`; `docs/design/DESIGN_DARK.md` refleja sus valores actuales.
+
 - `npm run typecheck`, `npm run lint` y `npm run build`: satisfactorios.
 - Sincronización de Entrenamiento y Predicción probada en Xiaomi 11T.
 - Almacenamiento de registros en MongoDB verificado.
@@ -40,6 +46,7 @@
 - Fase 5-D.3 validada y cerrada. No se añaden fechas, versiones ni resultados individuales de pruebas no informados.
 
 ### Pendientes actuales
+
 
 - Recolección del dataset definitivo.
 - Preparación y análisis del dataset en Python/Jupyter.
@@ -55,6 +62,16 @@ Un registro SQLite corrupto podría interrumpir la consulta del módulo durante 
 Las descripciones de restricciones y funcionalidades aún pendientes dentro de etapas anteriores corresponden a ese momento histórico; el estado vigente es el resumen anterior, la corrección UI actual y el cierre de 5-D.3.
 
 ## Trabajo completado
+
+### Corrección 2-D — Selector de tema claro/oscuro (completada y validada en Android)
+
+- `src/index.css`: overrides por `data-theme="dark"`, acento separado del relleno primario y sombras/transparencias mediante variables. Se conservan los valores claros y las reglas de tipografía, espaciado y geometría.
+- `src/hooks/useTheme.ts`: estado claro/oscuro, aplicación inmediata al documento y persistencia con la clave `ml-sensores-tema`. Si localStorage falla, el cambio continúa durante la sesión.
+- `index.html`: lectura temprana de la preferencia antes del montaje de React; claro por defecto cuando no hay preferencia válida o almacenamiento disponible.
+- `src/shared/Sidebar.tsx`: segundo botón del grid con luna/sol y etiqueta accesible que indica el tema de destino; reutiliza el estilo de las acciones.
+- Validación satisfactoria confirmada por el usuario en Xiaomi 11T; Corrección 2-D cerrada. El tema claro permanece sin modificaciones visuales y el oscuro conserva su tipografía, estructura, dimensiones y espaciados.
+- Paleta ajustada manualmente por el usuario: fondo `#101513`, superficie `#1B2420`, primario `#3D9B72`, acento `#83B59C` y contenedor secundario `#26332D`. Verdes menos saturados y superficies de gris carbón; la paleta completa, transparencias y sombras se documentan en `docs/design/DESIGN_DARK.md` a partir del CSS actual.
+- Este cierre es documental y no ejecuta comandos. La confirmación de Android no se amplía a resultados individuales de typecheck, lint o build no informados.
 
 ### Corrección 1 — Orientación vertical (completada y validada en Android)
 

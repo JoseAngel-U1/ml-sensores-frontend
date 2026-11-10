@@ -2,6 +2,15 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      try {
+        document.documentElement.dataset.theme =
+          localStorage.getItem("ml-sensores-tema") === "oscuro" ? "dark" : "light";
+      } catch {
+        // Sin almacenamiento disponible se conserva el tema claro por defecto.
+        document.documentElement.dataset.theme = "light";
+      }
+    </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>ml-sensores</title>

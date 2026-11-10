@@ -182,6 +182,20 @@ Revisión del agente durante la implementación: estática, sin comandos ni POST
 - [x] Validar en Xiaomi 11T que Test API no interfiere con la sincronización de registros.
 - [x] Validar en Xiaomi 11T que la navegación y los métodos de cierre del Sidebar (X, overlay, Escape y Atrás) siguen funcionando.
 
+## Corrección 2-D — Tema oscuro
+
+**Estado: Completada y validada en Android (Xiaomi 11T), según confirmación del usuario.**
+
+- [x] Paleta oscura mediante `:root[data-theme='dark']`, según `DESIGN_DARK.md` y sus Mode Mapping Guidelines.
+- [x] Conservar valores del tema claro, tipografía, dimensiones y distribución; compartir variables semánticas de colores, sombras y acentos.
+- [x] Selector en el segundo espacio del grid del Sidebar, con luna en claro y sol en oscuro.
+- [x] Persistencia en `localStorage` (`ml-sensores-tema`), claro por defecto y aplicación de la preferencia en el head antes del montaje de React para evitar el destello del tema claro.
+- [x] Selector claro/oscuro desde el Sidebar probado satisfactoriamente en Xiaomi 11T; Corrección 2-D cerrada por confirmación del usuario.
+- [x] Tema claro sin modificaciones visuales; modo oscuro conserva tipografía, estructura, dimensiones y espaciados del claro.
+- [x] Paleta oscura ajustada manualmente por el usuario a verdes menos saturados y superficies de gris carbón; valores oficiales actualizados en `docs/design/DESIGN_DARK.md` desde `src/index.css`.
+
+La confirmación corresponde a la validación en Android; no se atribuyen resultados individuales de typecheck, lint o build no informados en este cierre.
+
 ## Fase 5 — Machine Learning
 
 **Estado: Pendiente**

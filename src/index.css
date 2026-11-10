@@ -1,8 +1,9 @@
-/* Tema único: Functional Palette y reglas complementarias de docs/design/DESIGN.md. */
+/* Tema claro base: Functional Palette de docs/design/DESIGN.md. */
 :root {
   --color-background: #F5F8F5;
   --color-surface: #FFFFFF;
   --color-primary: #16854B;
+  --color-accent: #16854B;
   --color-primary-soft: #E4F3E9;
   --color-text: #172C20;
   --color-text-secondary: #506557;
@@ -36,9 +37,11 @@
   --radius-control: 0.25rem;
   --radius-card: 0.5rem;
   --radius-pill: 9999px;
-  --shadow-card: 0 1px 3px rgb(23 44 32 / 4%);
-  --shadow-interactive: 0 4px 12px rgb(22 133 75 / 8%);
-  --focus-ring: 0 0 0 2px rgb(22 133 75 / 15%);
+  --primary-rgb: 22 133 75;
+  --scrim-rgb: 23 44 32;
+  --shadow-card: 0 1px 3px rgb(var(--scrim-rgb) / 4%);
+  --shadow-interactive: 0 4px 12px rgb(var(--primary-rgb) / 8%);
+  --focus-ring: 0 0 0 2px rgb(var(--primary-rgb) / 15%);
   --transition-fast: 150ms ease-out;
   --touch-target: 2.75rem;
 
@@ -51,6 +54,33 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tema oscuro (Corrección 2-D): solo cambia colores, sombras y esquema nativo.
+   Tipografía, espaciados y geometría se heredan del tema claro.
+   Fuente de color: docs/design/DESIGN_DARK.md (prioriza Mode Mapping Guidelines). */
+:root[data-theme='dark'] {
+  --color-background: #101513;
+  --color-surface: #1B2420;
+  --color-primary: #3D9B72;
+  --color-accent: #83B59C;
+  --color-primary-soft: #26332D;
+  --color-text: #E2E8E4;
+  --color-text-secondary: #A5B4AA;
+  --color-on-primary: #FFFFFF;
+  --color-border: rgb(165 180 170 / 15%);
+  --color-primary-hover: #4BAE82;
+  --color-error: #F0A8A3;
+  --color-error-background: #492725;
+  --color-error-border: #87514D;
+
+  --primary-rgb: 61 155 114;
+  --scrim-rgb: 0 0 0;
+  --shadow-card: 0 1px 3px rgb(0 0 0 / 18%);
+  --shadow-interactive: 0 4px 12px rgb(0 0 0 / 24%);
+  --focus-ring: 0 0 0 2px rgb(61 155 114 / 20%);
+
+  color-scheme: dark;
 }
 
 *,
@@ -107,7 +137,7 @@ p {
 }
 
 a {
-  color: var(--color-primary);
+  color: var(--color-accent);
   text-underline-offset: 0.2em;
 }
 
@@ -145,7 +175,7 @@ button,
 
 .button--secondary {
   background: var(--color-primary-soft);
-  color: var(--color-primary);
+  color: var(--color-accent);
 }
 
 .button--ghost {
@@ -279,10 +309,10 @@ pre {
   height: var(--touch-target);
   min-height: var(--touch-target);
   padding: 0;
-  border: 1px solid rgb(22 133 75 / 24%);
+  border: 1px solid rgb(var(--primary-rgb) / 24%);
   border-radius: var(--radius-card);
   background: var(--color-primary-soft);
-  color: var(--color-primary);
+  color: var(--color-accent);
 }
 
 .app-header__menu::after {
@@ -291,7 +321,7 @@ pre {
   inset: -1px;
   border: 1px solid var(--color-primary);
   border-radius: calc(var(--radius-card) + 1px);
-  box-shadow: 0 0 0.5rem rgb(22 133 75 / 18%);
+  box-shadow: 0 0 0.5rem rgb(var(--primary-rgb) / 18%);
   opacity: 0.22;
   pointer-events: none;
   animation: sidebar-menu-glow 3.4s ease-in-out infinite;
@@ -366,7 +396,7 @@ pre {
 
 .bottom-navigation a[aria-current='page'] {
   background: var(--color-primary-soft);
-  color: var(--color-primary);
+  color: var(--color-accent);
   font-weight: 700;
 }
 
@@ -395,7 +425,7 @@ pre {
 .sidebar__backdrop {
   position: absolute;
   inset: 0;
-  background: rgb(23 44 32 / 45%);
+  background: rgb(var(--scrim-rgb) / 45%);
   opacity: 0;
   transition: opacity 240ms ease-out;
 }
@@ -415,7 +445,7 @@ pre {
   padding-top: env(safe-area-inset-top, 0px);
   background: var(--color-surface);
   border-right: 1px solid var(--color-border);
-  box-shadow: 0 0 2rem rgb(23 44 32 / 20%);
+  box-shadow: 0 0 2rem rgb(var(--scrim-rgb) / 20%);
   transform: translateX(-100%);
   transition: transform 240ms ease-out;
   overflow: hidden;
@@ -443,7 +473,7 @@ pre {
   height: var(--touch-target);
   border-radius: var(--radius-card);
   background: var(--color-primary-soft);
-  color: var(--color-primary);
+  color: var(--color-accent);
 }
 
 .sidebar__brand-title {
@@ -571,11 +601,11 @@ pre {
 
 .sidebar__api-result--comprobando,
 .sidebar__api-result--exito {
-  color: var(--color-primary);
+  color: var(--color-accent);
 }
 
 .sidebar__api-result--exito {
-  border-color: var(--color-primary);
+  border-color: var(--color-accent);
   background: var(--color-primary-soft);
 }
 
@@ -587,7 +617,7 @@ pre {
 
 .sidebar__api-result--comprobando .sidebar__api-title,
 .sidebar__api-result--exito .sidebar__api-title {
-  color: var(--color-primary);
+  color: var(--color-accent);
 }
 
 .sidebar__api-result--error .sidebar__api-title {
@@ -618,12 +648,12 @@ pre {
   0%,
   100% {
     opacity: 0.2;
-    box-shadow: 0 0 0.35rem rgb(22 133 75 / 12%);
+    box-shadow: 0 0 0.35rem rgb(var(--primary-rgb) / 12%);
   }
 
   50% {
     opacity: 0.55;
-    box-shadow: 0 0 0.65rem rgb(22 133 75 / 28%);
+    box-shadow: 0 0 0.65rem rgb(var(--primary-rgb) / 28%);
   }
 }
 
@@ -674,27 +704,27 @@ pre {
 
   .app-header__menu:enabled:hover {
     background: var(--color-primary-soft);
-    border-color: var(--color-primary);
-    color: var(--color-primary);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
     box-shadow: var(--shadow-interactive);
   }
 
   .sidebar__close:enabled:hover,
   .sidebar__action:enabled:hover {
     background: var(--color-primary-soft);
-    border-color: var(--color-primary);
-    color: var(--color-primary);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
     box-shadow: none;
   }
 
   .bottom-navigation a:hover {
     background: var(--color-primary-soft);
-    color: var(--color-primary);
+    color: var(--color-accent);
   }
 
   .view-navigation a:not([aria-current='page']):hover {
     background: var(--color-primary-soft);
-    color: var(--color-primary);
+    color: var(--color-accent);
   }
 }
 
@@ -748,7 +778,7 @@ pre {
   position: absolute;
   inset: 14%;
   border-radius: var(--radius-pill);
-  background: rgb(22 133 75 / 12%);
+  background: rgb(var(--primary-rgb) / 12%);
   filter: blur(1.5rem);
   pointer-events: none;
 }
@@ -769,10 +799,10 @@ pre {
 
 .capture-clock__progress {
   fill: none;
-  stroke: var(--color-primary);
+  stroke: var(--color-accent);
   stroke-width: 7;
   stroke-linecap: round;
-  filter: drop-shadow(0 2px 8px rgb(22 133 75 / 25%));
+  filter: drop-shadow(0 2px 8px rgb(var(--primary-rgb) / 25%));
   transition: stroke-dashoffset 300ms ease-out;
 }
 
@@ -827,8 +857,8 @@ pre {
   height: 0.625rem;
   flex-shrink: 0;
   border-radius: var(--radius-pill);
-  background: var(--color-primary);
-  box-shadow: 0 0 8px rgb(22 133 75 / 60%);
+  background: var(--color-accent);
+  box-shadow: 0 0 8px rgb(var(--primary-rgb) / 60%);
 }
 
 .capture-clock__dot--active {
@@ -837,15 +867,15 @@ pre {
 
 @keyframes capture-pulse {
   0% {
-    box-shadow: 0 0 0 0 rgb(22 133 75 / 45%);
+    box-shadow: 0 0 0 0 rgb(var(--primary-rgb) / 45%);
   }
 
   70% {
-    box-shadow: 0 0 0 0.5rem rgb(22 133 75 / 0%);
+    box-shadow: 0 0 0 0.5rem rgb(var(--primary-rgb) / 0%);
   }
 
   100% {
-    box-shadow: 0 0 0 0 rgb(22 133 75 / 0%);
+    box-shadow: 0 0 0 0 rgb(var(--primary-rgb) / 0%);
   }
 }
 
@@ -955,9 +985,9 @@ pre {
 }
 
 .activity-selector__option:has(input:checked) {
-  border-color: var(--color-primary);
+  border-color: var(--color-accent);
   background: var(--color-primary-soft);
-  color: var(--color-primary);
+  color: var(--color-accent);
 }
 
 .activity-selector__option:has(input:focus-visible) {
@@ -996,7 +1026,7 @@ pre {
   min-height: 3.5rem;
   font-size: var(--font-size-label);
   font-weight: 700;
-  box-shadow: 0 4px 16px rgb(22 133 75 / 25%);
+  box-shadow: 0 4px 16px rgb(var(--primary-rgb) / 25%);
 }
 
 .capture-controls button:disabled {
@@ -1012,7 +1042,7 @@ pre {
 
 .capture-controls__hint[data-estado='Preparando...'],
 .capture-controls__hint[data-estado='Capturando...'] {
-  color: var(--color-primary);
+  color: var(--color-accent);
   font-weight: 600;
 }
 
@@ -1038,9 +1068,9 @@ pre {
 }
 
 .capture-save-status--success {
-  border-color: var(--color-primary);
+  border-color: var(--color-accent);
   background: var(--color-primary-soft);
-  color: var(--color-primary);
+  color: var(--color-accent);
   font-weight: 600;
 }
 
@@ -1112,9 +1142,9 @@ pre {
 
 @media (hover: hover) {
   .activity-selector__option:not(:has(input:disabled)):hover {
-    border-color: var(--color-primary);
+    border-color: var(--color-accent);
     background: var(--color-primary-soft);
-    color: var(--color-primary);
+    color: var(--color-accent);
   }
 }
 
@@ -1271,7 +1301,7 @@ pre {
 }
 
 .records-sync__action-status {
-  color: var(--color-primary);
+  color: var(--color-accent);
   font-weight: 600;
 }
 
@@ -1355,9 +1385,9 @@ pre {
 }
 
 .record-status--pendiente {
-  border-color: var(--color-primary);
+  border-color: var(--color-accent);
   background: var(--color-primary-soft);
-  color: var(--color-primary);
+  color: var(--color-accent);
 }
 
 .record-status--sincronizado {

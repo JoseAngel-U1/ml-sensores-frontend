@@ -6,7 +6,7 @@ Arquitectura aprobada e implementada. La Fase 3 está completada y validada en A
 
 La arquitectura de Fase 3 se amplió con participantes (5-B) y conectividad/sincronización (5-C a 5-D.3), completadas y validadas por el usuario en Xiaomi 11T. Las vistas «Sincronizar» muestran exclusivamente pendientes de su módulo y permiten envío individual/masivo y eliminación local. FastAPI está desplegada en Render y el almacenamiento en MongoDB fue verificado por el usuario. Dataset definitivo, entrenamiento del modelo e inferencia permanecen pendientes.
 
-El Sidebar inicial (Corrección 2-A), el cierre con Atrás de Android (Corrección 2-B) y el Test API funcional (Corrección 2-C) están completados y validados en Xiaomi 11T. Test API es una prueba manual de conectividad HTTPS: se ejecuta solo al pulsar el botón, usa `GET /openapi.json` con la URL base configurada, reutiliza `checkApiConnectivity`/`requestApi` y muestra su resultado compacto dentro del Sidebar. La validación confirmó `GET /openapi.json` desde el Sidebar, los estados de carga, éxito, error y recuperación de conexión, el cierre del Sidebar durante la solicitud, la no interferencia con la sincronización de registros y la navegación y métodos de cierre del panel. El panel conserva overlay, cierre por fondo/Escape, encabezado, grid para dos acciones y créditos. No incluye cambio de tema ni navegación a todos los registros.
+El Sidebar inicial (Corrección 2-A), el cierre con Atrás de Android (Corrección 2-B) y el Test API funcional (Corrección 2-C) están completados y validados en Xiaomi 11T. Test API es una prueba manual de conectividad HTTPS: se ejecuta solo al pulsar el botón, usa `GET /openapi.json` con la URL base configurada, reutiliza `checkApiConnectivity`/`requestApi` y muestra su resultado compacto dentro del Sidebar. La validación confirmó `GET /openapi.json` desde el Sidebar, los estados de carga, éxito, error y recuperación de conexión, el cierre del Sidebar durante la solicitud, la no interferencia con la sincronización de registros y la navegación y métodos de cierre del panel. El panel conserva overlay, cierre por fondo/Escape, encabezado, grid para dos acciones y créditos. La Corrección 2-D añade el selector de tema en la segunda acción; está completada y validada en Android (Xiaomi 11T), según confirmación del usuario. La navegación a todos los registros permanece pendiente.
 
 ## 1. Inventario actual y reutilización
 
@@ -29,7 +29,8 @@ El Sidebar inicial (Corrección 2-A), el cierre con Atrás de Android (Correcci�
 | `src/types/sensores.ts` | `EstadoCaptura`, `MedicionSensor`, `ResultadoCaptura` con mediciones completas. | Contratos del hook y de los componentes de captura. |
 | `src/types/records.ts` | `Actividad`, `TipoRegistro`, `EstadoSync`, `Medicion`, `Registro`, `RegistroResumen` y `Participante`. | Contrato común; `Medicion` reutiliza `MedicionCompleta`, sin ejes nulos. |
 | `src/types/sync.ts` | Solicitudes y resultados HTTP de Entrenamiento/Predicción. | Contrato independiente de los campos internos SQLite. |
-| `src/index.css`, `src/assets/` | Estilos y recursos existentes. | Tema claro y presentación; sin un segundo sistema de temas. |
+| `src/index.css`, `src/assets/` | Estilos y recursos existentes; variables compartidas para claro/oscuro. | Tema oscuro mediante `data-theme="dark"`; completado y validado en Android. |
+| `src/hooks/useTheme.ts`, `index.html` | Alternancia y persistencia del tema; aplicación temprana de la preferencia. | Segundo botón del Sidebar; clave localStorage `ml-sensores-tema`. |
 
 La estructura de páginas, layouts, componentes compartidos, hooks y servicios está implementada. React Router está declarado en las dependencias. Este repositorio contiene el cliente HTTP; la implementación de FastAPI pertenece al backend externo.
 
@@ -197,7 +198,11 @@ La cuenta regresiva de 3 segundos está implementada antes de la captura de 10 s
 
 ## 6. Tema visual aprobado
 
-Solo tema claro. Sin modo oscuro ni selector de temas.
+Corrección 2-D completada y validada en Android (Xiaomi 11T), según confirmación del usuario: tema claro por defecto y selector claro/oscuro funcional en el segundo espacio del grid del Sidebar. El icono muestra luna en claro y sol en oscuro; la etiqueta indica el tema de destino.
+
+`index.html` lee `ml-sensores-tema` antes del montaje de React y aplica `data-theme="dark"` o `data-theme="light"` al elemento raíz. `useTheme` inicializa su estado desde ese atributo, lo actualiza al pulsar el botón y guarda la preferencia. Si localStorage no está disponible, el arranque usa claro y los cambios funcionan durante la sesión.
+
+La paleta oscura oficial se documenta en `DESIGN_DARK.md`, con Mode Mapping Guidelines y una tabla de tokens sincronizadas con los valores reales de `src/index.css` tras el ajuste manual del usuario. Utiliza verdes menos saturados y superficies de gris carbón: fondo `#101513`, superficie `#1B2420`, primario `#3D9B72`, acento `#83B59C` y contenedor secundario `#26332D`. Solo se adaptan colores, bordes, sombras y el esquema nativo de controles; el modo oscuro conserva tipografía, estructura, dimensiones y espaciados del claro. El tema claro permanece sin modificaciones visuales. `--color-primary` define rellenos de acción y `--color-accent` textos e indicadores; `--primary-rgb` y `--scrim-rgb` permiten adaptar transparencias sin duplicar reglas de componentes.
 
 La fuente oficial de colores, tipografía, espaciados y estilos es el documento original de Google Stitch: [docs/design/DESIGN.md](design/DESIGN.md). Consultarlo directamente para los valores y reglas visuales; esta arquitectura no mantiene una copia del sistema completo de estilos.
 

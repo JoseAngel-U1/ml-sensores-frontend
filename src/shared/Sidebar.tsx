@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useApiConnectivityTest } from "../hooks/useApiConnectivityTest";
+import { useTheme } from "../hooks/useTheme";
 
 type SidebarProps = {
   abierto: boolean;
@@ -20,6 +21,7 @@ export default function Sidebar({ abierto, onCerrar }: SidebarProps) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
   const { estado: estadoTestApi, comprobando, comprobarConexion } = useApiConnectivityTest();
+  const { tema, alternarTema } = useTheme();
 
   useEffect(() => {
     if (!abierto) return;
@@ -143,6 +145,24 @@ export default function Sidebar({ abierto, onCerrar }: SidebarProps) {
                   <path d="M9 7V3M15 7V3M7 7h10v4a5 5 0 0 1-10 0V7ZM12 16v5" />
                 </svg>
                 <span>Test API</span>
+              </button>
+              <button
+                type="button"
+                className="sidebar__action"
+                onClick={alternarTema}
+                aria-label={tema === "oscuro" ? "Activar tema claro" : "Activar tema oscuro"}
+              >
+                <svg className="navigation-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+                  {tema === "oscuro" ? (
+                    <>
+                      <circle cx="12" cy="12" r="4" />
+                      <path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5" />
+                    </>
+                  ) : (
+                    <path d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z" />
+                  )}
+                </svg>
+                <span>{tema === "oscuro" ? "Tema claro" : "Tema oscuro"}</span>
               </button>
             </div>
             <p id="sidebar-api-note" className="sidebar__section-note">
